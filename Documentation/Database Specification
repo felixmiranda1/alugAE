@@ -1,0 +1,243 @@
+# A4: Conceptual Data Model
+
+## Brief Presentation of Goals
+
+The conceptual data model aims to represent the main entities of the system, their attributes, and relationships, ensuring a clear understanding of the domain while enabling a smooth transition to the relational model.
+
+---
+
+## 1. Class Diagram
+
+### Main Entities and Attributes
+
+1. **Landlord**:
+   - **Attributes:**
+     - `id`: Unique identifier.
+     - `name`: Full name.
+     - `cpf`: Taxpayer Registration Number (unique, required).
+     - `rg`: General Registration (identity document).
+     - `marital_status`: Marital status (e.g., single, married).
+     - `profession`: Profession.
+     - `phone`: Phone number (WhatsApp, unique, required).
+     - `email`: Email address (optional, not unique).
+     - `created_at`: Registration date.
+     - `updated_at`: Last profile update.
+
+2. **Tenant**:
+   - **Attributes:**
+     - `id`: Unique identifier.
+     - `name`: Full name.
+     - `cpf`: Taxpayer Registration Number (unique, required).
+     - `rg`: General Registration (identity document).
+     - `marital_status`: Marital status (e.g., single, married).
+     - `profession`: Profession.
+     - `phone`: Phone number (WhatsApp, unique, required).
+     - `email`: Email address (required, unique).
+     - `created_at`: Registration date.
+     - `updated_at`: Last profile update.
+
+3. **Property**:
+   - **Attributes:**
+     - `id`: Unique identifier.
+     - `name`: Property or building name.
+     - `street`: Street name.
+     - `number`: Street number.
+     - `complement`: Address complement (optional).
+     - `city`: City.
+     - `state`: State.
+     - `zip_code`: Postal code (CEP).
+     - `landlord`: Relationship to the `Landlord` entity.
+     - `is_standalone`: Boolean indicating if the property is standalone.
+     - `created_at`: Registration date.
+     - `updated_at`: Last property update.
+
+4. **Unit** (Inheriting from `Property`):
+   - **Specific Attributes:**
+     - `unit_number`: Unit identification (e.g., "101", "A1").
+     - `status`: Unit status (`available`, `occupied`, `maintenance`).
+     - `tenant`: Relationship to the `Tenant` entity (optional).
+     - `monthly_rent`: Monthly rental price.
+     - `deposit_amount`: Security deposit amount (optional).
+     - `move_in_date`: Tenant's move-in date (optional).
+     - `move_out_date`: Tenant's move-out date (optional).
+
+5. **Rent** (Lease Contract):
+   - **Attributes:**
+     - `id`: Unique identifier.
+     - `property`: Relationship to the `Property` entity.
+     - `tenant`: Relationship to the `Tenant` entity.
+     - `start_date`: Lease start date.
+     - `end_date`: Lease end date (optional).
+     - `monthly_rent`: Lease amount.
+     - `status`: Lease status (`active`, `terminated`, etc.).
+
+---
+
+## 2. Additional Business Rules
+
+### Properties and Units:
+1. A `Property` can contain multiple `Units`.
+2. Each `Unit` is linked to a single `Property` and can be occupied by only one `Tenant` at a time.
+
+### Relationships:
+1. A `Landlord` can own multiple `Properties`, but each `Property` belongs to only one `Landlord`.
+2. A `Tenant` can be associated with multiple leases over time, but each lease (`Rent`) refers to a single `Property` or `Unit`.
+
+### Status and Availability:
+1. The status of a `Unit` must automatically update based on associated leases (`Rent`).
+2. Properties without additional units must be marked as `standalone`.
+
+### Unique and Mandatory Fields:
+1. CPF and phone (WhatsApp) are unique and mandatory for both `Landlord` and `Tenant`.
+2. Email is mandatory and unique only for `Tenant`.
+
+---
+
+# A5: Relational Schema, Validation, and Schema Refinement
+
+## 1. Relational Schema (Compact Notation)
+
+### Relational Schema
+| Relation   | Compact Notation                                                                                       |
+|------------|-------------------------------------------------------------------------------------------------------|
+| **R01**   | Property(id PK, name, street, number, complement, city, state, zip_code, landlord_id → Landlord.id NN, is_standalone BOOL, created_at, updated_at) |
+| **R02**   | Unit(id PK → Property.id, unit_number, status, tenant_id → Tenant.id, monthly_rent, deposit_amount, move_in_date, move_out_date) |
+| **R03**   | Landlord(id PK, name, cpf UNIQUE, rg, marital_status, profession, phone UNIQUE, email, created_at, updated_at) |
+| **R04**   | Tenant(id PK, name, cpf UNIQUE, rg, marital_status, profession, phone UNIQUE, email UNIQUE, created_at, updated_at) |
+| **R05**   | Rent(id PK, property_id → Property.id, tenant_id → Tenant.id, start_date, end_date, monthly_rent, status) |
+| **R06**   | Complaint(id PK, tenant_id → Tenant.id NN, property_id → Property.id NN, description, priority ENUM('low', 'medium', 'high'), status ENUM('open', 'in_progress', 'closed'), created_at, updated_at) |
+| **R07**   | Task(id PK, complaint_id → Complaint.id NN, manager_id → Landlord.id, description, status ENUM('pending', 'completed'), due_date, created_at, updated_at) |
+| **R08**   | Notification(id PK, recipient_id → Landlord.id, message TEXT, sent_at TIMESTAMP, type ENUM('payment', 'complaint', 'general')) |
+
+---
+
+## 2. Domains
+
+### Custom Domains
+| Domain Name          | Domain Specification                                         |
+|----------------------|-------------------------------------------------------------|
+| **Phone**            | `VARCHAR(15)` – Validated as a phone number.                |
+| **CPF**              | `CHAR(11)` – Validated to be unique and 11 digits long.     |
+| **Email**            | `VARCHAR(255)` – Validated as an email address.             |
+| **Status**           | ENUM (`available`, `occupied`, `maintenance`, `terminated`) |
+| **Rent**             | `DECIMAL(10, 2)` – Must be positive.                        |
+| **Date**             | `DATE` – Standard date format.                              |
+| **Priority**         | ENUM (`low`, `medium`, `high`)                              |
+| **ComplaintStatus**  | ENUM (`open`, `in_progress`, `closed`)                      |
+| **TaskStatus**       | ENUM (`pending`, `completed`)                               |
+
+---
+
+## 3. Schema Validation
+
+### Validation for `Property`
+
+**Dependencies:**
+- `id → {name, street, number, complement, city, state, zip_code, landlord_id}`
+- `landlord_id → {id}`
+
+**Normalization:**
+- The relation is in **BCNF** because all non-prime attributes depend only on the primary key.
+
+### Validation for `Unit`
+
+**Dependencies:**
+- `id → {unit_number, status, tenant_id, monthly_rent, deposit_amount, move_in_date, move_out_date}`
+- `property_id → {id}`
+
+**Normalization:**
+- The relation is in **BCNF**, ensuring no redundancy or dependency violations.
+
+### Validation for `Complaint`
+
+**Dependencies:**
+- `id → {tenant_id, property_id, description, priority, status}`
+- `tenant_id → {id}`
+- `property_id → {id}`
+
+**Normalization:**
+- The relation is in **BCNF**, ensuring clear association between complaints and entities.
+
+### Validation for `Task`
+
+**Dependencies:**
+- `id → {complaint_id, manager_id, description, status, due_date}`
+- `complaint_id → {id}`
+
+**Normalization:**
+- The relation is in **BCNF**, ensuring tasks are uniquely tied to complaints.
+
+---
+
+## 4. Integrity Rules
+
+### Example Constraints
+
+#### Monthly Rent Constraint for `Unit`
+```sql
+ALTER TABLE Unit
+ADD CONSTRAINT chk_rent_positive CHECK (monthly_rent > 0);
+```
+
+#### Default Status for `Unit`
+```sql
+ALTER TABLE Unit
+ALTER COLUMN status SET DEFAULT 'available';
+```
+
+#### Phone Validation for `Landlord`
+```sql
+ALTER TABLE Landlord
+ADD CONSTRAINT chk_phone_format CHECK (phone ~ '^\+?[0-9]+$');
+```
+
+#### Priority Validation for `Complaint`
+```sql
+ALTER TABLE Complaint
+ADD CONSTRAINT chk_priority_enum CHECK (priority IN ('low', 'medium', 'high'));
+```
+
+---
+
+# A6: Indexes, Triggers, Transactions, and Database Population
+
+## 1. Database Workload
+### Predicted System Load
+| Relation Reference | Relation Name | Order of Magnitude | Estimated Growth |
+|--------------------|---------------|--------------------|------------------|
+| **R01**           | Property       | dozens             | low              |
+| **R02**           | Unit           | hundreds           | medium           |
+| **R03**           | Landlord       | dozens             | low              |
+| **R04**           | Tenant         | hundreds           | medium           |
+| **R05**           | Rent           | hundreds           | medium           |
+| **R06**           | Complaint      | dozens             | medium           |
+| **R07**           | Task           | hundreds           | high             |
+| **R08**           | Notification   | thousands          | high             |
+
+---
+
+## 2. Proposed Indices
+
+### 2.1 Performance Indices
+| Index     | Relation       | Attribute      | Type   | Cardinality | Clustering | Justification          |
+|-----------|----------------|----------------|--------|-------------|------------|------------------------|
+| **IDX01** | Tenant         | phone          | B-tree | high        | no         | Fast lookup for tenants by phone. |
+| **IDX02** | Unit           | status         | B-tree | low         | no         | Optimize queries for unit availability. |
+| **IDX03** | Rent           | start_date     | B-tree | medium      | no         | Efficient filtering by rental periods. |
+| **IDX04** | Complaint      | priority       | B-tree | low         | no         | Speed up filtering of complaints by priority. |
+
+### 2.2 Full-Text Search Indices
+| Index     | Relation       | Attribute      | Type   | Clustering | Justification                |
+|-----------|----------------|----------------|--------|------------|------------------------------|
+| **IDX05** | Complaint      | description    | GIN    | no         | Enable fast full-text search on complaint descriptions. |
+| **IDX06** | Notification   | message        | GIN    | no         | Optimize search on notification messages. |
+
+---
+
+## 3. Triggers 
+
+Soon
+
+## 4. Transactions
+
+Soon

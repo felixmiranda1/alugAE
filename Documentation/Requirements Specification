@@ -1,4 +1,4 @@
-# A1: Project Name
+# A1: AlugAE
 
 ## Goals, Business Context, and Environment
 
@@ -96,7 +96,7 @@ The purpose of this section is to identify the system's actors, describe their r
 
 ### Actor Diagram
 
-(Insert diagram here: A visual representation identifying the actors and their relationships with the system, such as "User", and its derived roles: "Landlord", "SubLandlord", "Tenant", and "Admin.")
+(Insert diagram here: A visual representation identifying the actors and their relationships with the system, such as "User", and its derived roles: "Landlord", "Manager", "Tenant", and "Admin.")
 
 ### Actor Table
 
@@ -104,7 +104,7 @@ The purpose of this section is to identify the system's actors, describe their r
 |----------------|-----------------------------------------------------------------------------|
 | **User**       | General representation of a system user, providing shared properties and behaviors. |
 | **Landlord**   | Derived from User. Responsible for managing properties and interacting with tenants. |
-| **SubLandlord**| Derived from User. Assigned by a Landlord to handle daily operations with customizable permissions. |
+| **Manager**| Derived from User. Assigned by a Landlord to handle daily operations with customizable permissions. |
 | **Tenant**     | Derived from User. Receives notifications and payment requests via WhatsApp. Can also view payment history, initial property photos, and add comments upon moving in. |
 | **Admin**      | Derived from User. Responsible for managing the system, overseeing operations, and resolving issues. |
 
@@ -125,8 +125,8 @@ The purpose of this section is to identify the system's actors, describe their r
 | US14       | Add Property Comments | Medium | Tenant | As a tenant, I want to add comments upon moving in so I can document my observations. |
 | US15       | Sign In         | High     | User        | As a user, I want to sign in so I can access my account. |
 | US16       | Logout          | High     | User        | As a user, I want to log out so I can securely end my session. |
-| US10       | Assign SubLandlord | Medium | Landlord | As a landlord, I want to assign a sublandlord with specific permissions to handle daily tasks. |
-| US11       | Perform Assigned Tasks | Medium | SubLandlord | As a sublandlord, I want to perform tasks assigned by the landlord based on the permissions granted. |
+| US10       | Assign Manager | Medium | Landlord | As a landlord, I want to assign a Manager with specific permissions to handle daily tasks. |
+| US11       | Perform Assigned Tasks | Medium | Manager | As a Manager, I want to perform tasks assigned by the landlord based on the permissions granted. |
 
 ---
 
@@ -181,15 +181,15 @@ The sitemap outlines the hierarchical structure of the web application, showing 
   - **SignIn:** Allows users to log in.
   - **SignUp:** Enables new users to create accounts.
   - Supports password recovery.
-- **Dashboard:** User-specific control panel (different views for Landlord, Tenant, Admin, SubLandlord).
+- **Dashboard:** User-specific control panel (different views for Landlord, Tenant, Admin, Manager).
 - **Property Management:** Pages for adding, editing, and viewing property details.
 - **Payment History:** Accessible by both Landlords and Tenants to review payments.
 - **Complains:**
   - For Tenants to report issues or concerns directly to the Landlord.
   - Landlords can manage and assign tasks derived from complaints.
 - **Tasks Management:**
-  - Landlords assign tasks to SubLandlords.
-  - SubLandlords track and mark tasks as completed.
+  - Landlords assign tasks to Manager.
+  - Manager track and mark tasks as completed.
 - **Admin Panel:** Management interface for system administrators.
 
 ---
@@ -217,9 +217,9 @@ Wireframes provide a visual guide representing the skeletal framework of key pag
 - **Purpose:** Enables landlords to view and manage complaints submitted by tenants.
 - **Main Components:**
   - List of complaints with filters (property, status, priority).
-  - Button to assign complaints as tasks to SubLandlords.
+  - Button to assign complaints as tasks to Manager.
 
-### UI04: Assigned Tasks (SubLandlord)
+### UI04: Assigned Tasks (Manager)
 - **Purpose:** Displays tasks assigned by landlords based on tenant complaints.
 - **Main Components:**
   - Task list with filters (Pending, In Progress, Completed).

@@ -1,0 +1,98 @@
+# EAP: Architecture Specification and Prototype
+
+## 1. Overview of the System Architecture
+
+### Technologies Used:
+- **Backend Framework:** Django (Python)
+  - Django Templates for rendering views.
+  - Django ORM for database interactions.
+- **Database:** PostgreSQL
+  - Robust, scalable, and supports advanced features like full-text search.
+- **Frontend:** Django Templates
+  - Enables server-side rendering for all pages.
+- **Infrastructure:** Docker
+  - Local development environment set up with Docker Compose.
+
+### Justification for Technology Choices:
+- Django provides an all-in-one framework, reducing the need for external integrations.
+- PostgreSQL ensures scalability and compatibility with the project’s data requirements.
+- Docker simplifies environment consistency across development and future deployment.
+
+---
+
+## 2. Logical View
+
+### Application Architecture:
+- **Model-View-Template (MVT):**
+  - **Models:** Handle the database schema and business logic.
+    - Example: `Tenant`, `Property`, `Unit` models.
+  - **Views:** Process requests and pass data to templates.
+    - Example: A view that fetches tenant data and renders it to a list page.
+  - **Templates:** Render the final HTML pages sent to the user.
+    - Example: `tenant_list.html` for displaying tenants.
+
+### Layer Interaction:
+1. **User Request:**
+   - A user accesses a URL (e.g., `/tenants/`).
+2. **View Processing:**
+   - The corresponding Django view queries the database using models.
+3. **Template Rendering:**
+   - The view passes data to the template, which renders an HTML response.
+4. **Response Delivery:**
+   - The server sends the rendered HTML to the user’s browser.
+
+---
+
+## 3. Physical View
+
+### Local Development:
+- **Environment:**
+  - Docker Compose configuration:
+    - **Service 1:** Django application.
+    - **Service 2:** PostgreSQL database.
+  - Static files served via Django during development.
+
+### Deployment (Future):
+- **Hosting Options:**
+  - Heroku or Railway for ease of deployment.
+  - AWS or Google Cloud for more scalable infrastructure.
+- **Database:**
+  - Hosted PostgreSQL service (e.g., AWS RDS, Heroku Postgres).
+- **Static Files:**
+  - Served via a CDN (e.g., AWS S3 + CloudFront).
+
+---
+
+## 4. Prototype
+
+### Key Interfaces:
+
+#### 4.1. Dashboard (Landlord)
+- **Purpose:** Provide an overview of properties, tenants, and tasks.
+- **Components:**
+  - Summary of total units, rented units, and complaints.
+  - Quick links to `Add Property`, `View Payment History`, and `Manage Tenants`.
+
+#### 4.2. Property Management (Landlord)
+- **Purpose:** Allow landlords to add, edit, and view properties and their units.
+- **Components:**
+  - Form to register new properties (e.g., address, units).
+  - List of properties with detailed views for each unit.
+  - Status indicators for unit availability.
+
+#### 4.3. Tenant Management (Landlord)
+- **Purpose:** Manage tenants associated with properties.
+- **Components:**
+  - List of tenants linked to properties.
+  - Form to add/edit tenant details.
+  - Payment status and history view for each tenant.
+
+
+#### 4.4. View Payment History (Tenant)
+- **Purpose:** Allow tenants to view their payment records.
+- **Components:**
+  - Table of payment transactions (e.g., `Date`, `Amount`, `Status`).
+  - Option to download receipts.
+
+
+---
