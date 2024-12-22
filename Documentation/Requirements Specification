@@ -1,0 +1,233 @@
+# A1: Project Name
+
+## Goals, Business Context, and Environment
+
+- **Goals:**
+  - Provide a tool for managing small real estate enterprises.
+  - Automate administrative processes and rental documentation.
+  - Ensure security and reliability in property rental operations.
+
+- **Business Context:**
+  - Targeted at small property owners managing units like studios and shared apartments, mainly kitnets
+  - Designed to address challenges in managing multiple tenants and units efficiently.
+
+- **Environment:**
+  - Web-based application accessible via mobile and desktop.
+
+## Motivation
+
+- Save time and enhance organization in property management.
+- Provide robust procedures and a seamless experience for landlords.
+- Solve inefficiencies in the traditional rental process.
+
+## Main Features
+
+- Property and landlord registration.
+- Tenant management and unit linking.
+- Automated contract generation from templates.
+- Photo documentation of property conditions.
+- Rent payment notifications and management.
+- Monthly reports for landlords.
+
+## User Profiles
+
+- **Landlord:**
+  - Primary user group.
+  - Access to management tools, reports, and contract issuance.
+
+- **Tenant:**
+  - Passive role in the system.
+  - Receives payment notifications via WhatsApp.
+  - Sends Pix payment confirmation via WhatsApp.
+
+# A1: Project Name
+
+## Goals, Business Context, and Environment
+
+- **Goals:**
+  - Provide a tool for managing small real estate enterprises.
+  - Automate administrative processes and rental documentation.
+  - Ensure security and reliability in property rental operations.
+
+- **Business Context:**
+  - Targeted at small property owners managing units like studios and shared apartments, mainly kitnets.
+  - Designed to address challenges in managing multiple tenants and units efficiently.
+
+- **Environment:**
+  - Web-based application accessible via mobile and desktop.
+
+## Motivation
+
+- Save time and enhance organization in property management.
+- Provide robust procedures and a seamless experience for landlords.
+- Solve inefficiencies in the traditional rental process.
+
+## Main Features
+
+- Property and landlord registration.
+- Tenant management and unit linking.
+- Automated contract generation from templates.
+- Photo documentation of property conditions.
+- Rent payment notifications and management.
+- Monthly reports for landlords.
+
+## User Profiles
+
+- **Landlord:**
+  - Primary user group.
+  - Access to management tools, reports, and contract issuance.
+
+- **Tenant:**
+  - Passive role in the system.
+  - Receives payment notifications via WhatsApp.
+  - Sends Pix payment confirmation via WhatsApp.
+
+---
+
+# A2: Actors and User Stories
+
+## Brief Presentation of Goals
+
+The purpose of this section is to identify the system's actors, describe their relationships, and document user stories for each actor. This ensures a clear understanding of user interactions and responsibilities within the system.
+
+---
+
+## 1. Actors
+
+### Actor Diagram
+
+(Insert diagram here: A visual representation identifying the actors and their relationships with the system, such as "User", and its derived roles: "Landlord", "SubLandlord", "Tenant", and "Admin.")
+
+### Actor Table
+
+| Actor          | Description                                                                 |
+|----------------|-----------------------------------------------------------------------------|
+| **User**       | General representation of a system user, providing shared properties and behaviors. |
+| **Landlord**   | Derived from User. Responsible for managing properties and interacting with tenants. |
+| **SubLandlord**| Derived from User. Assigned by a Landlord to handle daily operations with customizable permissions. |
+| **Tenant**     | Derived from User. Receives notifications and payment requests via WhatsApp. Can also view payment history, initial property photos, and add comments upon moving in. |
+| **Admin**      | Derived from User. Responsible for managing the system, overseeing operations, and resolving issues. |
+
+---
+
+## 2. User Stories
+
+### Format Template
+
+| Identifier | Name          | Priority | Responsible   | Description                                             |
+|------------|---------------|----------|---------------|---------------------------------------------------------|
+| US01       | Sign Up         | High     | User        | As a user, I want to sign up so I can access the system's features. |
+| US02       | Add Property  | High     | Landlord      | As a landlord, I want to add property details so tenants can be assigned. |
+| US03       | Link Tenant   | High     | Landlord      | As a landlord, I want to link tenants to properties so I can track payments. |
+| US04       | Receive Notifications | High | Tenant | As a tenant, I want to receive payment notifications so I stay informed. |
+| US12       | View Payment History | Medium | Tenant | As a tenant, I want to view my payment history so I can track my financial status. |
+| US13       | View Property Photos | Medium | Tenant | As a tenant, I want to view initial property photos so I can compare the property condition. |
+| US14       | Add Property Comments | Medium | Tenant | As a tenant, I want to add comments upon moving in so I can document my observations. |
+| US15       | Sign In         | High     | User        | As a user, I want to sign in so I can access my account. |
+| US16       | Logout          | High     | User        | As a user, I want to log out so I can securely end my session. |
+| US10       | Assign SubLandlord | Medium | Landlord | As a landlord, I want to assign a sublandlord with specific permissions to handle daily tasks. |
+| US11       | Perform Assigned Tasks | Medium | SubLandlord | As a sublandlord, I want to perform tasks assigned by the landlord based on the permissions granted. |
+
+---
+
+## 3. Supplementary Requirements
+
+### Business Rules
+
+| Identifier | Name                           | Description                                                                 |
+|------------|--------------------------------|-----------------------------------------------------------------------------|
+| BR01       | Ownership Constraints          | Landlords cannot assign tenants to properties they do not own.             |
+| BR02       | Data Completeness              | Profiles must include all required fields (e.g., CPF, email).              |
+| BR03       | Notification Rules             | Tenants must receive payment notifications 5 days before the due date.     |
+
+### Technical Requirements
+
+| Identifier | Name                           | Description                                                                 |
+|------------|--------------------------------|-----------------------------------------------------------------------------|
+| TR01       | WhatsApp Integration           | The system must integrate with WhatsApp to send notifications.             |
+| TR02       | Secure Data Storage            | User data must be encrypted at rest and in transit.                        |
+| TR03       | Multi-device Compatibility     | The system must work seamlessly on mobile and desktop devices.             |
+
+### Restrictions
+
+| Identifier | Name                           | Description                                                                 |
+|------------|--------------------------------|-----------------------------------------------------------------------------|
+| RS01       | Browser Compatibility          | The system must support the latest two versions of Chrome and Firefox.     |
+| RS02       | Monthly Data Quota             | The system must support up to 10,000 notifications per month.              |
+
+---
+
+# A3: Information Architecture
+
+## Brief Presentation of Goals
+
+This section aims to define the structural design of the web application, illustrating the relationships between different components and providing visual representations to clarify navigation and layout.
+
+---
+
+## 1. Sitemap
+
+### Description
+
+The sitemap outlines the hierarchical structure of the web application, showing the connections between pages and their purposes.
+
+### Sitemap Diagram
+
+![Sitemap](./media/siteMap.jpg)
+
+### Key Pages:
+- **Home Page:** Entry point with an overview of features and user login.
+- **Authentication Pages:**
+  - **SignIn:** Allows users to log in.
+  - **SignUp:** Enables new users to create accounts.
+  - Supports password recovery.
+- **Dashboard:** User-specific control panel (different views for Landlord, Tenant, Admin, SubLandlord).
+- **Property Management:** Pages for adding, editing, and viewing property details.
+- **Payment History:** Accessible by both Landlords and Tenants to review payments.
+- **Complains:**
+  - For Tenants to report issues or concerns directly to the Landlord.
+  - Landlords can manage and assign tasks derived from complaints.
+- **Tasks Management:**
+  - Landlords assign tasks to SubLandlords.
+  - SubLandlords track and mark tasks as completed.
+- **Admin Panel:** Management interface for system administrators.
+
+---
+
+## 2. Wireframes
+
+### Description
+
+Wireframes provide a visual guide representing the skeletal framework of key pages. This ensures clarity in layout and functionality.
+
+### UI01: Dashboard (Landlord)
+- **Purpose:** Central hub for landlords to manage properties, view tenant details, and monitor payment statuses.
+- **Main Components:**
+  - Quick stats overview.
+  - Links to Property Management, Complains, and Payment History.
+  - Notification center.
+
+### UI02: Complains Page (Tenant)
+- **Purpose:** Allows tenants to submit complaints and view their status.
+- **Main Components:**
+  - Complaint submission form (title, description, priority).
+  - Status tracking (Pending, In Progress, Resolved).
+
+### UI03: Complains Management (Landlord)
+- **Purpose:** Enables landlords to view and manage complaints submitted by tenants.
+- **Main Components:**
+  - List of complaints with filters (property, status, priority).
+  - Button to assign complaints as tasks to SubLandlords.
+
+### UI04: Assigned Tasks (SubLandlord)
+- **Purpose:** Displays tasks assigned by landlords based on tenant complaints.
+- **Main Components:**
+  - Task list with filters (Pending, In Progress, Completed).
+  - Option to mark tasks as completed and add comments.
+
+### Placeholder for Additional Wireframes:
+- Admin Panel.
+- Notifications Log.
+- Payment History (Tenant and Landlord).
+
+(Insert visual wireframes for the described pages.)
