@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Landlord List</title>
+</head>
+<body>
+    <h1>Landlord List</h1>
+    <ul>
+        {% for landlord in landlords %}
+            <li>{{ landlord }}</li>
+        {% empty %}
+            <li>No landlords found.</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

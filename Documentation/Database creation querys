@@ -1,0 +1,115 @@
+### Database Creation Queries
+
+#### **1. Criação do Schema**
+```sql
+CREATE SCHEMA alugae AUTHORIZATION alugae_user;
+```
+
+---
+
+#### **2. Criação das Tabelas**
+
+##### **2.1. Tabela `user`**
+```sql
+CREATE TABLE alugae.user (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    cpf CHAR(11) UNIQUE NOT NULL,
+    phone VARCHAR(15) UNIQUE NOT NULL,
+    email VARCHAR(255) UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+##### **2.2. Tabela `landlord`**
+```sql
+CREATE TABLE alugae.landlord (
+    id SERIAL PRIMARY KEY,
+    user_id INT UNIQUE NOT NULL,
+    marital_status VARCHAR(20),
+    profession VARCHAR(100),
+    FOREIGN KEY (user_id) REFERENCES alugae.user (id)
+);
+```
+
+##### **2.3. Tabela `tenant`**
+```sql
+CREATE TABLE alugae.tenant (
+    id SERIAL PRIMARY KEY,
+    user_id INT UNIQUE NOT NULL,
+    marital_status VARCHAR(20),
+    profession VARCHAR(100),
+    FOREIGN KEY (user_id) REFERENCES alugae.user (id)
+);
+```
+
+##### **2.4. Tabela `property`**
+```sql
+CREATE TABLE alugae.property (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    street VARCHAR(255) NOT NULL,
+    number VARCHAR(10) NOT NULL,
+    complement VARCHAR(255),
+    city VARCHAR(100) NOT NULL,
+    state VARCHAR(50) NOT NULL,
+    zip_code VARCHAR(20) NOT NULL,
+    landlord_id INT NOT NULL,
+    is_standalone BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (landlord_id) REFERENCES alugae.landlord (user_id)
+);
+```
+
+##### **2.5. Tabela `unit`**
+```sql
+CREATE TABLE alugae.unit (
+    id SERIAL PRIMARY KEY,
+    property_id INT NOT NULL,
+    unit_number VARCHAR(10) NOT NULL,
+    status VARCHAR(20) CHECK (status IN ('available', 'occupied', 'maintenance')) DEFAULT 'available',
+    tenant_id INT,
+    monthly_rent DECIMAL(10, 2) CHECK (monthly_rent > 0),
+    deposit_amount DECIMAL(10, 2),
+    move_in_date DATE,
+    move_out_date DATE,
+    FOREIGN KEY (property_id) REFERENCES alugae.property (id),
+    FOREIGN KEY (tenant_id) REFERENCES alugae.tenant (user_id)
+);
+```
+
+##### **2.6. Tabela `rent`**
+```sql
+CREATE TABLE alugae.rent (
+    id SERIAL PRIMARY KEY,
+    property_id INT NOT NULL,
+    tenant_id INT NOT NULL,
+    start_date DATE NOT NULL,
+    end_date DATE,
+    monthly_rent DECIMAL(10, 2) CHECK (monthly_rent > 0),
+    status VARCHAR(20) CHECK (status IN ('active', 'terminated')) NOT NULL,
+    FOREIGN KEY (property_id) REFERENCES alugae.property (id),
+    FOREIGN KEY (tenant_id) REFERENCES alugae.tenant (user_id)
+);
+```
+
+---
+
+#### **3. Índices**
+
+##### **3.1. Índices para Busca Rápida**
+```sql
+CREATE INDEX idx_user_phone ON alugae.user (phone);
+CREATE INDEX idx_unit_status ON alugae.unit (status);
+CREATE INDEX idx_rent_start_date ON alugae.rent (start_date);
+```
+
+---
+
+#### **4. Testar as Tabelas**
+- Liste as tabelas criadas:
+  ```sql
+  \dt alugae.*
+  ```

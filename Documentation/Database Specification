@@ -10,33 +10,27 @@ The conceptual data model aims to represent the main entities of the system, the
 
 ### Main Entities and Attributes
 
-1. **Landlord**:
+1. **User**:
    - **Attributes:**
      - `id`: Unique identifier.
      - `name`: Full name.
      - `cpf`: Taxpayer Registration Number (unique, required).
-     - `rg`: General Registration (identity document).
-     - `marital_status`: Marital status (e.g., single, married).
-     - `profession`: Profession.
      - `phone`: Phone number (WhatsApp, unique, required).
-     - `email`: Email address (optional, not unique).
+     - `email`: Email address (unique, optional).
      - `created_at`: Registration date.
      - `updated_at`: Last profile update.
 
-2. **Tenant**:
-   - **Attributes:**
-     - `id`: Unique identifier.
-     - `name`: Full name.
-     - `cpf`: Taxpayer Registration Number (unique, required).
-     - `rg`: General Registration (identity document).
+2. **Landlord** (Inheriting from `User`):
+   - **Specific Attributes:**
      - `marital_status`: Marital status (e.g., single, married).
      - `profession`: Profession.
-     - `phone`: Phone number (WhatsApp, unique, required).
-     - `email`: Email address (required, unique).
-     - `created_at`: Registration date.
-     - `updated_at`: Last profile update.
 
-3. **Property**:
+3. **Tenant** (Inheriting from `User`):
+   - **Specific Attributes:**
+     - `marital_status`: Marital status (e.g., single, married).
+     - `profession`: Profession.
+
+4. **Property**:
    - **Attributes:**
      - `id`: Unique identifier.
      - `name`: Property or building name.
@@ -51,7 +45,7 @@ The conceptual data model aims to represent the main entities of the system, the
      - `created_at`: Registration date.
      - `updated_at`: Last property update.
 
-4. **Unit** (Inheriting from `Property`):
+5. **Unit** (Inheriting from `Property`):
    - **Specific Attributes:**
      - `unit_number`: Unit identification (e.g., "101", "A1").
      - `status`: Unit status (`available`, `occupied`, `maintenance`).
@@ -61,7 +55,7 @@ The conceptual data model aims to represent the main entities of the system, the
      - `move_in_date`: Tenant's move-in date (optional).
      - `move_out_date`: Tenant's move-out date (optional).
 
-5. **Rent** (Lease Contract):
+6. **Rent** (Lease Contract):
    - **Attributes:**
      - `id`: Unique identifier.
      - `property`: Relationship to the `Property` entity.
@@ -81,7 +75,7 @@ The conceptual data model aims to represent the main entities of the system, the
 
 ### Relationships:
 1. A `Landlord` can own multiple `Properties`, but each `Property` belongs to only one `Landlord`.
-2. A `Tenant` can be associated with multiple leases over time, but each lease (`Rent`) refers to a single `Property` or `Unit`.
+2. A `Tenant` can be associated with multiple leases over time, but each lease (`Rent`) refers to a single `Property` or Unit.
 
 ### Status and Availability:
 1. The status of a `Unit` must automatically update based on associated leases (`Rent`).
@@ -89,7 +83,7 @@ The conceptual data model aims to represent the main entities of the system, the
 
 ### Unique and Mandatory Fields:
 1. CPF and phone (WhatsApp) are unique and mandatory for both `Landlord` and `Tenant`.
-2. Email is mandatory and unique only for `Tenant`.
+2. Email is mandatory and unique only for `User`.
 
 ---
 
@@ -100,14 +94,15 @@ The conceptual data model aims to represent the main entities of the system, the
 ### Relational Schema
 | Relation   | Compact Notation                                                                                       |
 |------------|-------------------------------------------------------------------------------------------------------|
-| **R01**   | Property(id PK, name, street, number, complement, city, state, zip_code, landlord_id → Landlord.id NN, is_standalone BOOL, created_at, updated_at) |
-| **R02**   | Unit(id PK → Property.id, unit_number, status, tenant_id → Tenant.id, monthly_rent, deposit_amount, move_in_date, move_out_date) |
-| **R03**   | Landlord(id PK, name, cpf UNIQUE, rg, marital_status, profession, phone UNIQUE, email, created_at, updated_at) |
-| **R04**   | Tenant(id PK, name, cpf UNIQUE, rg, marital_status, profession, phone UNIQUE, email UNIQUE, created_at, updated_at) |
-| **R05**   | Rent(id PK, property_id → Property.id, tenant_id → Tenant.id, start_date, end_date, monthly_rent, status) |
-| **R06**   | Complaint(id PK, tenant_id → Tenant.id NN, property_id → Property.id NN, description, priority ENUM('low', 'medium', 'high'), status ENUM('open', 'in_progress', 'closed'), created_at, updated_at) |
-| **R07**   | Task(id PK, complaint_id → Complaint.id NN, manager_id → Landlord.id, description, status ENUM('pending', 'completed'), due_date, created_at, updated_at) |
-| **R08**   | Notification(id PK, recipient_id → Landlord.id, message TEXT, sent_at TIMESTAMP, type ENUM('payment', 'complaint', 'general')) |
+| **R01**   | Property(id PK, name, street, number, complement, city, state, zip_code, landlord_id → Landlord.user_id NN, is_standalone BOOL, created_at, updated_at) |
+| **R02**   | Unit(id PK → Property.id, unit_number, status, tenant_id → Tenant.user_id, monthly_rent, deposit_amount, move_in_date, move_out_date) |
+| **R03**   | User(id PK, name, cpf UNIQUE, phone UNIQUE, email UNIQUE, created_at, updated_at) |
+| **R04**   | Landlord(id PK, user_id → User.id, marital_status, profession) |
+| **R05**   | Tenant(id PK, user_id → User.id, marital_status, profession) |
+| **R06**   | Rent(id PK, property_id → Property.id, tenant_id → Tenant.user_id, start_date, end_date, monthly_rent, status) |
+| **R07**   | Complaint(id PK, tenant_id → Tenant.user_id NN, property_id → Property.id NN, description, priority ENUM('low', 'medium', 'high'), status ENUM('open', 'in_progress', 'closed'), created_at, updated_at) |
+| **R08**   | Task(id PK, complaint_id → Complaint.id NN, manager_id → Landlord.user_id, description, status ENUM('pending', 'completed'), due_date, created_at, updated_at) |
+| **R09**   | Notification(id PK, recipient_id → User.id, message TEXT, sent_at TIMESTAMP, type ENUM('payment', 'complaint', 'general')) |
 
 ---
 
@@ -185,9 +180,9 @@ ALTER TABLE Unit
 ALTER COLUMN status SET DEFAULT 'available';
 ```
 
-#### Phone Validation for `Landlord`
+#### Phone Validation for `User`
 ```sql
-ALTER TABLE Landlord
+ALTER TABLE User
 ADD CONSTRAINT chk_phone_format CHECK (phone ~ '^\+?[0-9]+$');
 ```
 
@@ -207,12 +202,13 @@ ADD CONSTRAINT chk_priority_enum CHECK (priority IN ('low', 'medium', 'high'));
 |--------------------|---------------|--------------------|------------------|
 | **R01**           | Property       | dozens             | low              |
 | **R02**           | Unit           | hundreds           | medium           |
-| **R03**           | Landlord       | dozens             | low              |
-| **R04**           | Tenant         | hundreds           | medium           |
-| **R05**           | Rent           | hundreds           | medium           |
-| **R06**           | Complaint      | dozens             | medium           |
-| **R07**           | Task           | hundreds           | high             |
-| **R08**           | Notification   | thousands          | high             |
+| **R03**           | User           | hundreds           | medium           |
+| **R04**           | Landlord       | dozens             | low              |
+| **R05**           | Tenant         | hundreds           | medium           |
+| **R06**           | Rent           | hundreds           | medium           |
+| **R07**           | Complaint      | dozens             | medium           |
+| **R08**           | Task           | hundreds           | high             |
+| **R09**           | Notification   | thousands          | high             |
 
 ---
 
@@ -221,23 +217,25 @@ ADD CONSTRAINT chk_priority_enum CHECK (priority IN ('low', 'medium', 'high'));
 ### 2.1 Performance Indices
 | Index     | Relation       | Attribute      | Type   | Cardinality | Clustering | Justification          |
 |-----------|----------------|----------------|--------|-------------|------------|------------------------|
-| **IDX01** | Tenant         | phone          | B-tree | high        | no         | Fast lookup for tenants by phone. |
-| **IDX02** | Unit           | status         | B-tree | low         | no         | Optimize queries for unit availability. |
-| **IDX03** | Rent           | start_date     | B-tree | medium      | no         | Efficient filtering by rental periods. |
-| **IDX04** | Complaint      | priority       | B-tree | low         | no         | Speed up filtering of complaints by priority. |
+| **IDX01** | tenant         | phone          | B-tree | high        | no         | Fast lookup for tenants by phone. |
+| **IDX02** | unit           | status         | B-tree | low         | no         | Optimize queries for unit availability. |
+| **IDX03** | rent           | start_date     | B-tree | medium      | no         | Efficient filtering by rental periods. |
+| **IDX04** | complaint      | priority       | B-tree | low         | no         | Speed up filtering of complaints by priority. |
 
 ### 2.2 Full-Text Search Indices
 | Index     | Relation       | Attribute      | Type   | Clustering | Justification                |
 |-----------|----------------|----------------|--------|------------|------------------------------|
-| **IDX05** | Complaint      | description    | GIN    | no         | Enable fast full-text search on complaint descriptions. |
-| **IDX06** | Notification   | message        | GIN    | no         | Optimize search on notification messages. |
+| **IDX05** | complaint      | description    | GIN    | no         | Enable fast full-text search on complaint descriptions. |
+| **IDX06** | notification   | message        | GIN    | no         | Optimize search on notification messages. |
 
 ---
 
-## 3. Triggers 
+## 3. Triggers
 
-Soon
+**Soon**
+
+---
 
 ## 4. Transactions
 
-Soon
+**Soon**
