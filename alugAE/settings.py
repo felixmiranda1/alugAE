@@ -31,16 +31,23 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    # Native 
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # Apps creation
     'accounts',
     'properties',
     'payments',
     'rent',
+    # Allauth
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
 ]
 
 MIDDLEWARE = [
@@ -51,6 +58,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = 'alugAE.urls'
@@ -80,13 +88,18 @@ WSGI_APPLICATION = 'alugAE.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'alugae',
-        'USER': 'alugae_user',
-        'PASSWORD': 'password',
-        'HOST': '127.0.0.1',  
-        'PORT': '5432',    
+        'NAME': 'alugae',  # Nome do banco de dados
+        'USER': 'felixmiranda',  # Usuário do banco de dados
+        'PASSWORD': 'Porto',  # Senha do usuário
+        'HOST': 'localhost',  # Endereço do banco de dados
+        'PORT': '5432',  # Porta do PostgreSQL
+        'OPTIONS': {
+            'options': '-c search_path=alugae'  # Configura o schema padrão
+        },
     }
 }
+
+
 
 
 
@@ -107,6 +120,33 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+AUTH_USER_MODEL = "accounts.CustomUser"
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'accounts.backends.CustomAuthenticationBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+ACCOUNT_FORMS = {
+    "login": "accounts.forms.CustomLoginForm",
+}
+
+SITE_ID = 1
+
+# Configurações de Autenticação do django-allauth
+ACCOUNT_AUTHENTICATION_METHOD = "email"  # Vamos customizar para incluir telefone
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_SIGNUP_PASSWORD_ENTER_TWICE = True
+ACCOUNT_LOGOUT_ON_GET = True
+ACCOUNT_LOGIN_ATTEMPTS_LIMIT = 5
+ACCOUNT_LOGIN_ATTEMPTS_TIMEOUT = 300  # Em segundos (5 minutos)
+
+
 
 
 # Internationalization

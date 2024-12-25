@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Landlord Registration - Step 2</h2>
+<p>You can skip this step and complete your profile later.</p>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Complete Registration</button>
+</form>
+<a href="{% url 'account_login' %}">Skip and go to Login</a>
+{% endblock %}
