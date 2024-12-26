@@ -1,6 +1,17 @@
-from django.shortcuts import render, redirect
-from .forms import EssentialLandlordForm, OptionalLandlordForm
+from django.shortcuts import render, redirect, get_object_or_404
+from .forms import EssentialLandlordForm, OptionalLandlordForm, TenantSignupForm
 from .models import CustomUser, Landlord
+from django.contrib.auth.decorators import login_required
+
+# View to select the type of user (landlord or tenant)
+def user_type_selection(request):
+    if request.method == "POST":
+        user_type = request.POST.get("user_type")
+        if user_type == "landlord":
+            return redirect("landlord_signup_step1")
+        elif user_type == "tenant":
+            return redirect("tenant_signup") 
+    return render(request, "accounts/user_type_selection.html")
 
 # View for the first part of registration (Essential Data)
 def landlord_signup_step1(request):
@@ -18,18 +29,31 @@ def landlord_signup_step1(request):
     return render(request, "accounts/landlord_signup_step1.html", {"form": form})
 
 # View for the second part of registration (Optional Data)
+@login_required
 def landlord_signup_step2(request, user_id):
-    try:
-        user = CustomUser.objects.get(id=user_id)
-    except CustomUser.DoesNotExist:
-        return redirect("landlord_signup_step1")  # Redirect back to step 1 if user doesn't exist
+    user = get_object_or_404(CustomUser, id=user_id)
+
+    # Ensure the logged-in user matches the user being edited
+    if request.user != user:
+        return redirect("landlord_signup_step1")  # Redirect to step 1 if unauthorized
 
     if request.method == "POST":
         form = OptionalLandlordForm(request.POST)
         if form.is_valid():
-            form.save(user=user)  # Save optional data linked to the user
-            return redirect("account_login")  # Redirect to login page after successful registration
+            form.save(user=user)
+            return redirect("account_login")  # Redirect to login page
     else:
         form = OptionalLandlordForm()
 
     return render(request, "accounts/landlord_signup_step2.html", {"form": form})
+
+# View for tenant SignUp form
+def tenant_signup(request):
+    if request.method == "POST":
+        form = TenantSignupForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("account_login")  # Redirect to login after successful signup
+    else:
+        form = TenantSignupForm()
+    return render(request, "accounts/tenant_signup.html", {"form": form})

@@ -1,6 +1,8 @@
 # accounts/models.py
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
+from django.utils.timezone import now, timedelta
+
 
 # Custom User Manager
 class CustomUserManager(BaseUserManager):
@@ -48,7 +50,6 @@ class CustomUser(AbstractUser):
         db_table = "user"
         managed = False
 
-
 # Landlord model 
 class Landlord(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name="landlord")
@@ -61,4 +62,54 @@ class Landlord(models.Model):
 
     class Meta:
         db_table = "landlord"
+
+# Tenant model
+class Tenant(models.Model):
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+    marital_status = models.CharField(max_length=20, blank=True, null=True)
+    profession = models.CharField(max_length=100, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"Tenant: {self.user.email or self.user.phone}"
+
+    class Meta:
+        db_table = "tenant"
+
+# Tenant signup code
+def default_expiration():
+    return now() + timedelta(hours=24)
+
+class AdoptionCode(models.Model):
+    landlord = models.ForeignKey(
+        "accounts.CustomUser",
+        on_delete=models.CASCADE,
+        related_name="adoption_codes",
+    )
+    property = models.ForeignKey(
+        'properties.Property', 
+        on_delete=models.CASCADE, 
+        related_name='adoption_codes',
+        null=True,  # Permitir valores nulos
+        blank=True  
+    )
+    unit = models.ForeignKey(
+        'properties.Unit', 
+        on_delete=models.CASCADE, 
+        related_name='adoption_codes',
+        null=True,  # Permitir valores nulos
+        blank=True  
+    )
+    code = models.CharField(max_length=8, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField(default=default_expiration)  # Use the helper function
+    is_used = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Code: {self.code} for {self.unit.name} ({self.property.name})"
+
+    class Meta:
+        db_table = "adoption_codes"
+        verbose_name = "Adoption Code"
+        verbose_name_plural = "Adoption Codes"
 

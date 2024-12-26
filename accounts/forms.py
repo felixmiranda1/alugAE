@@ -1,6 +1,8 @@
 from allauth.account.forms import LoginForm
 from django import forms
-from .models import CustomUser, Landlord
+from .models import CustomUser, Landlord, AdoptionCode, Tenant
+from datetime import timedelta
+from django.utils.timezone import now
 
 # Custom Login Form
 class CustomLoginForm(LoginForm):
@@ -66,3 +68,61 @@ class OptionalLandlordForm(forms.ModelForm):
             user.save()
             landlord.save()
         return landlord
+
+# Form for Tenant SignUp
+class TenantSignupForm(forms.ModelForm):
+    email = forms.EmailField(required=True)
+    phone = forms.CharField(max_length=15, required=True)
+    password = forms.CharField(widget=forms.PasswordInput, required=True)
+    first_name = forms.CharField(max_length=150, required=True)
+    last_name = forms.CharField(max_length=150, required=True)
+    cpf = forms.CharField(max_length=14, required=True)
+    marital_status = forms.CharField(max_length=20, required=True)
+    profession = forms.CharField(max_length=100, required=True)
+    adoption_code = forms.CharField(max_length=8, required=True)
+
+    class Meta:
+        model = CustomUser
+        fields = ['email', 'phone', 'password', 'first_name', 'last_name', 'cpf']
+
+    def clean_adoption_code(self):
+        code = self.cleaned_data.get('adoption_code')
+        try:
+            adoption_code = AdoptionCode.objects.get(code=code, is_used=False)
+            if adoption_code.expires_at < now():
+                raise forms.ValidationError("The adoption code has expired.")
+            return adoption_code
+        except AdoptionCode.DoesNotExist:
+            raise forms.ValidationError("Invalid adoption code.")
+
+    def save(self, commit=True):
+        # Extract username from the email
+        username = self.cleaned_data["email"].split("@")[0]
+       
+        # Create the CustomUser instance
+        user = CustomUser.objects.create_user(
+            username=username,
+            email=self.cleaned_data["email"],
+            phone=self.cleaned_data["phone"],
+            password=self.cleaned_data["password"]
+        )
+
+        user.first_name = self.cleaned_data["first_name"]
+        user.last_name = self.cleaned_data["last_name"]
+        user.cpf = self.cleaned_data["cpf"]
+        user.save()
+
+        adoption_code = self.cleaned_data.get('adoption_code')
+        # Create the Tenant profile
+        tenant = Tenant.objects.create(
+            user=user,
+            marital_status=self.cleaned_data["marital_status"],
+            profession=self.cleaned_data["profession"]
+        )
+
+        # Mark the adoption code as used
+        adoption_code = self.cleaned_data.pop('adoption_code')
+        adoption_code.is_used = True
+        adoption_code.save()
+
+        return user, tenant
