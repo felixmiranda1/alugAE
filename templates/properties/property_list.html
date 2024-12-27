@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Propriedades</title>
+</head>
+<body>
+    <h1>Lista de Propriedades</h1>
+    <ul>
+        {% for property in properties %}
+            <li>
+                <strong>{{ property.name }}</strong> - {{ property.street }}, {{ property.city }}
+                <a href="{% url 'property_edit' property.id %}">Editar</a> |
+                <a href="{% url 'property_delete' property.id %}">Deletar</a>
+            </li>
+        {% endfor %}
+    </ul>
+    <a href="{% url 'property_add' %}">Adicionar Nova Propriedade</a>
+</body>
+</html>

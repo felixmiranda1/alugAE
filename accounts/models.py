@@ -3,7 +3,6 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 from django.utils.timezone import now, timedelta
 
-
 # Custom User Manager
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
@@ -80,36 +79,43 @@ class Tenant(models.Model):
 def default_expiration():
     return now() + timedelta(hours=24)
 
+# Adoption code
+def default_expiration():
+    """Helper function to define default expiration."""
+    return now() + timedelta(days=1)  # Default expiration: 1 day
+
 class AdoptionCode(models.Model):
     landlord = models.ForeignKey(
         "accounts.CustomUser",
         on_delete=models.CASCADE,
         related_name="adoption_codes",
+        verbose_name="Landlord"
     )
     property = models.ForeignKey(
-        'properties.Property', 
-        on_delete=models.CASCADE, 
-        related_name='adoption_codes',
-        null=True,  # Permitir valores nulos
-        blank=True  
+        'properties.Property',
+        on_delete=models.CASCADE,
+        related_name='adoption_codes_property',  # Nome único para evitar conflitos
+        null=True,
+        blank=True,
+        verbose_name="Property"
     )
     unit = models.ForeignKey(
-        'properties.Unit', 
-        on_delete=models.CASCADE, 
-        related_name='adoption_codes',
-        null=True,  # Permitir valores nulos
-        blank=True  
+        'properties.Unit',
+        on_delete=models.CASCADE,
+        related_name='adoption_codes_unit',  # Nome único para evitar conflitos
+        null=True,
+        blank=True,
+        verbose_name="Unit"
     )
-    code = models.CharField(max_length=8, unique=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    expires_at = models.DateTimeField(default=default_expiration)  # Use the helper function
-    is_used = models.BooleanField(default=False)
+    code = models.CharField(max_length=8, unique=True, verbose_name="Adoption Code")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
+    expires_at = models.DateTimeField(default=default_expiration, verbose_name="Expires At")
+    is_used = models.BooleanField(default=False, verbose_name="Is Used")
 
     def __str__(self):
-        return f"Code: {self.code} for {self.unit.name} ({self.property.name})"
+        return f"Code: {self.code} for Unit: {self.unit} (Property: {self.property})"
 
     class Meta:
         db_table = "adoption_codes"
         verbose_name = "Adoption Code"
         verbose_name_plural = "Adoption Codes"
-

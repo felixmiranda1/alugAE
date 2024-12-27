@@ -48,7 +48,7 @@ The conceptual data model aims to represent the main entities of the system, the
 5. **Unit** (Inheriting from `Property`):
    - **Specific Attributes:**
      - `unit_number`: Unit identification (e.g., "101", "A1").
-     - `status`: Unit status (`available`, `occupied`, `maintenance`).
+     - `status`: Unit status (`available`, `occupied`, `maintenance`, `reserved`, `inactive` ).
      - `tenant`: Relationship to the `Tenant` entity (optional).
      - `monthly_rent`: Monthly rental price.
      - `deposit_amount`: Security deposit amount (optional).
