@@ -1,6 +1,6 @@
 from allauth.account.forms import LoginForm
 from django import forms
-from .models import CustomUser, Landlord, AdoptionCode, Tenant
+from .models import CustomUser, Landlord, Tenant, AdoptionCode
 from datetime import timedelta
 from django.utils.timezone import now
 
@@ -126,3 +126,55 @@ class TenantSignupForm(forms.ModelForm):
         adoption_code.save()
 
         return user, tenant
+# Form for updating Landlord profile
+class LandlordUpdateForm(forms.ModelForm):
+    marital_status = forms.CharField(max_length=20, required=False)  # Optional marital status field
+    profession = forms.CharField(max_length=100, required=False)  # Optional profession field
+
+    class Meta:
+        model = CustomUser
+        fields = ['email', 'phone', 'cpf']  # Fields allowed for update
+
+    def save(self, user, commit=True):
+        # Update CustomUser fields
+        user.email = self.cleaned_data['email']
+        user.phone = self.cleaned_data['phone']
+        user.cpf = self.cleaned_data['cpf']
+        if commit:
+            user.save()
+
+        # Update Landlord-specific fields
+        landlord = Landlord.objects.get(user=user)
+        landlord.marital_status = self.cleaned_data.get('marital_status')
+        landlord.profession = self.cleaned_data.get('profession')
+        if commit:
+            landlord.save()
+
+        return user
+
+
+# Form for updating Tenant profile
+class TenantUpdateForm(forms.ModelForm):
+    marital_status = forms.CharField(max_length=20, required=False)  # Optional marital status field
+    profession = forms.CharField(max_length=100, required=False)  # Optional profession field
+
+    class Meta:
+        model = CustomUser
+        fields = ['email', 'phone', 'cpf']  # Fields allowed for update
+
+    def save(self, user, commit=True):
+        # Update CustomUser fields
+        user.email = self.cleaned_data['email']
+        user.phone = self.cleaned_data['phone']
+        user.cpf = self.cleaned_data['cpf']
+        if commit:
+            user.save()
+
+        # Update Tenant-specific fields
+        tenant = Tenant.objects.get(user=user)
+        tenant.marital_status = self.cleaned_data.get('marital_status')
+        tenant.profession = self.cleaned_data.get('profession')
+        if commit:
+            tenant.save()
+
+        return user

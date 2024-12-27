@@ -16,11 +16,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from accounts.views import landlord_signup_step1, landlord_signup_step2
+from accounts.views import landlord_signup_step1, landlord_signup_step2, home 
 from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path("", home, name="home"),
     path("accounts/", include("accounts.urls")),  # Include accounts app URLs
     path('accounts/', include('allauth.urls')),
 ]

@@ -146,6 +146,10 @@ ACCOUNT_LOGOUT_ON_GET = True
 ACCOUNT_LOGIN_ATTEMPTS_LIMIT = 5
 ACCOUNT_LOGIN_ATTEMPTS_TIMEOUT = 300  # Em segundos (5 minutos)
 
+LOGOUT_REDIRECT_URL = '/accounts/login/'  # Redireciona para a página de login
+
+LOGIN_URL = '/accounts/login/'  # Página para redirecionar usuários não autenticados
+LOGIN_REDIRECT_URL = '/accounts/profile/'  # Página para redirecionar após login bem-sucedido
 
 
 

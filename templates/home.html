@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Welcome to the Application</h2>
+<p>Please <a href="{% url 'account_login' %}">login</a> or <a href="{% url 'account_signup' %}">sign up</a>.</p>
+{% endblock %}
