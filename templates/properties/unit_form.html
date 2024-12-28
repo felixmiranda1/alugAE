@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if unit %}Editar Unidade{% else %}Adicionar Unidade{% endif %}</title>
+</head>
+<body>
+    <h1>{% if unit %}Editar Unidade{% else %}Adicionar Unidade{% endif %}</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">{% if unit %}Salvar Alterações{% else %}Adicionar Unidade{% endif %}</button>
+    </form>
+    <a href="{% url 'unit_list' unit.property.id %}">Voltar</a>
+</body>
+</html>

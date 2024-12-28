@@ -31,13 +31,14 @@ class Property(models.Model):
 
 
 class Unit(models.Model):
-    property_ptr = models.OneToOneField(
+    id = models.BigAutoField(primary_key=True) 
+    property = models.ForeignKey(
         Property,
         on_delete=models.CASCADE,
-        parent_link=True,
-        related_name="unit",
+        related_name="units",
         verbose_name="Property Reference"
     )
+
     unit_number = models.CharField(max_length=50, verbose_name="Unit Number")
     status = models.CharField(
         max_length=20,
