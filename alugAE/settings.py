@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -151,6 +152,12 @@ LOGOUT_REDIRECT_URL = '/accounts/login/'  # Redireciona para a página de login
 LOGIN_URL = '/accounts/login/'  # Página para redirecionar usuários não autenticados
 LOGIN_REDIRECT_URL = '/accounts/profile/'  # Página para redirecionar após login bem-sucedido
 
+# Media settings
+MEDIA_URL = '/media/'  # URL base para acessar os arquivos
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')  # Diretório raiz para arquivos
+
+# Subdiretório para templates de contratos
+CONTRACTS_TEMPLATES_DIR = os.path.join(MEDIA_ROOT, 'contracts_templates/')
 
 
 # Internationalization

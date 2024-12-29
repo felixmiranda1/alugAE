@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Contract</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+        }
+        h1, h2 {
+            text-align: center;
+        }
+        .section {
+            margin-bottom: 20px;
+        }
+        .signature {
+            margin-top: 40px;
+        }
+        .signature-line {
+            margin: 40px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+        .signature-line div {
+            width: 40%;
+            text-align: center;
+            border-top: 1px solid #000;
+        }
+    </style>
+</head>
+<body>
+    <h1>Contract for Property Rental</h1>
+
+    <div class="section">
+        <h2>Landlord Information</h2>
+        <p><strong>Name:</strong> {{ NOME_DO_LANDLORD }}</p>
+        <p><strong>Civil Status:</strong> {{ ESTADO_CIVIL_LANDLORD }}</p>
+        <p><strong>Profession:</strong> {{ PROFISSAO_LANDLORD }}</p>
+        <p><strong>CPF:</strong> {{ CPF_LANDLORD }}</p>
+        <p><strong>Address:</strong> {{ ENDERECO_LANDLORD }}</p>
+    </div>
+
+    <div class="section">
+        <h2>Tenant Information</h2>
+        <p><strong>Name:</strong> {{ NOME_DO_TENANT }}</p>
+        <p><strong>Civil Status:</strong> {{ ESTADO_CIVIL_TENANT }}</p>
+        <p><strong>Profession:</strong> {{ PROFISSAO_TENANT }}</p>
+        <p><strong>CPF:</strong> {{ CPF_TENANT }}</p>
+        <p><strong>Address:</strong> {{ ENDERECO_TENANT }}</p>
+    </div>
+
+    <div class="section">
+        <h2>Contract Details</h2>
+        <p><strong>Property Address:</strong> {{ unit.property.street }}</p>
+        <p><strong>Duration:</strong> {{ PRAZO_LOCACAO }} months</p>
+        <p><strong>Start Date:</strong> {{ DATA_INICIO_LOCACAO }}</p>
+        <p><strong>Monthly Rent:</strong> R$ {{ VALOR_ALUGUEL }}</p>
+        <p><strong>Due Date:</strong> Day {{ DIA_VENCIMENTO }}</p>
+        <p><strong>Special Conditions:</strong> {{ CONDICOES_ESPECIAIS }}</p>
+    </div>
+
+    <div class="signature">
+        <p>Date: {{ DATA_ASSINATURA }}</p>
+        <div class="signature-line">
+            <div>Landlord</div>
+            <div>Tenant</div>
+        </div>
+    </div>
+</body>
+</html>

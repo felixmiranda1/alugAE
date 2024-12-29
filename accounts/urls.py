@@ -1,6 +1,8 @@
 from django.urls import path
 from .views import user_type_selection, landlord_signup_step1, landlord_signup_step2, tenant_signup, update_landlord, update_tenant,profile,update_profile
 
+app_name = "accounts" 
+
 urlpatterns = [
     # URL for profile page
     path("profile/", profile, name="profile"),

@@ -67,13 +67,20 @@ class Tenant(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     marital_status = models.CharField(max_length=20, blank=True, null=True)
     profession = models.CharField(max_length=100, blank=True, null=True)
+    landlord = models.ForeignKey(
+        'accounts.Landlord',  # Substitua por 'CustomUser' se Landlord não for um modelo separado
+        on_delete=models.CASCADE,
+        related_name="tenants",
+        verbose_name="Landlord"
+    )  # Relacionamento direto com o Landlord
     created_at = models.DateTimeField(auto_now_add=True)
-    
+
     def __str__(self):
         return f"Tenant: {self.user.email or self.user.phone}"
 
     class Meta:
         db_table = "tenant"
+
 
 # Tenant signup code
 def default_expiration():
