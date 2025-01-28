@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from properties.models import Unit
 
 class Template(models.Model):
     name = models.CharField(max_length=100)  # Template name
@@ -40,6 +41,7 @@ class Contract(models.Model):
         null=True,
         blank=True
     )  # Template used for the contract
+    unit = models.ForeignKey(Unit, on_delete=models.CASCADE)
     start_date = models.DateField()  # Start date of the contract
     end_date = models.DateField()  # End date of the contract
     rent_value = models.DecimalField(max_digits=10, decimal_places=2)  # Monthly rent value

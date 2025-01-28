@@ -1,0 +1,47 @@
+<h2>Review Contract Data</h2>
+
+{% if missing_fields %}
+<p style="color: red;">⚠ Some required fields are missing:</p>
+<ul>
+    {% for field in missing_fields %}
+    <li style="color: red;">{{ field }}</li>
+    {% endfor %}
+</ul>
+<p>Please complete the missing fields before proceeding.</p>
+{% else %}
+<p>All data is complete!</p>
+{% endif %}
+
+<h3>Landlord Information</h3>
+<form method="post">
+    {% csrf_token %}
+    {{ landlord_form.as_p }}
+    <button type="submit" name="update_landlord">Update Landlord</button>
+</form>
+
+<h3>Tenant Information</h3>
+<form method="post">
+    {% csrf_token %}
+    {{ tenant_form.as_p }}
+    <button type="submit" name="update_tenant">Update Tenant</button>
+</form>
+
+<h3>Property Information</h3>
+<form method="post">
+    {% csrf_token %}
+    {{ property_form.as_p }}
+    <button type="submit" name="update_property">Update Property</button>
+</form>
+
+<h3>Unit Information</h3>
+<form method="post">
+    {% csrf_token %}
+    {{ unit_form.as_p }}
+    <button type="submit" name="update_unit">Update Unit</button>
+</form>
+
+<!-- Button to Generate Contract -->
+<form method="post" action="{% url 'rent:generate_contract' unit_id=unit.id tenant_id=tenant.id template_id=template.id %}">
+    {% csrf_token %}
+    <button type="submit" style="background-color: green;">Generate Contract</button>
+</form>

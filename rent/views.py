@@ -7,11 +7,16 @@ from .models import Template, Contract
 from accounts.models import Landlord, Tenant
 from properties.models import Property, Unit  # Model for Unit (from app properties)
 from .services.contract_generation import generate_contract
+from .services import validate_contract_data
+from django.contrib import messages
+from .forms import LandlordForm, TenantForm, PropertyForm, UnitForm
 from django.core.serializers.json import DjangoJSONEncoder
 import json
 from django.http import HttpResponse
 from xhtml2pdf import pisa
 from django.template import engines
+from django.utils.timezone import now
+from datetime import timedelta
 
 @login_required
 def contract_setup_view(request):
@@ -43,7 +48,7 @@ def contract_setup_view(request):
     #             "id": unit.id,
     #             "property_id": unit.property.id,
     #             "unit_number": unit.unit_number,
-    #             "status": unit.status,
+    #             "status": unit.status, 
     #             "tenant_id": unit.tenant.id if unit.tenant else None,
     #         } for unit in units
     #     ],
@@ -70,7 +75,7 @@ def contract_setup_view(request):
         template = get_object_or_404(Template, id=template_id)
 
         # Redirect to the contract generation view
-        return redirect("rent:preview_contract", unit_id=unit.id, tenant_id=tenant.id, template_id=template.id)
+        return redirect("rent:review_contract_data", unit_id=unit.id, tenant_id=tenant.id, template_id=template.id)
 
     templates = Template.objects.all()
 
@@ -142,45 +147,130 @@ def preview_contract_view(request, unit_id, tenant_id, template_id):
 
 
 @login_required
-def generate_contract_view(request, contract_id):
+def generate_contract_view(request, unit_id, tenant_id, template_id):
     """
-    Django view to generate a contract based on a template and contract data.
-
-    Args:
-        request: Django HTTP request object.
-        contract_id: ID of the contract to generate.
-
-    Returns:
-        JsonResponse: The generated contract content or an error message.
+    Generates a contract after the Landlord has reviewed and confirmed all data.
     """
     try:
-        # Fetch the contract and associated template
-        contract = get_object_or_404(Contract, id=contract_id)
-        landlord = contract.landlord
+        # Buscar o Landlord associado ao usuário logado
+        landlord = Landlord.objects.get(user=request.user)
 
-        # Fetch properties, units, and tenants associated with the Landlord
-        properties = Property.objects.filter(landlord_id=landlord.id)
+        # Buscar propriedades, unidades, e tenants associados ao Landlord
+        properties = Property.objects.filter(landlord_id=landlord.id)  # Corrigido
         units = Unit.objects.filter(property__in=properties)
         tenants = Tenant.objects.filter(landlord=landlord)
 
-        # Fetch template and validate context
-        template = contract.template
-        if not template:
-            return JsonResponse({"error": "No template associated with this contract."}, status=400)
+        # Buscar os objetos específicos com base nos IDs
+        unit = units.get(id=unit_id)
+        tenant = tenants.get(id=tenant_id)
+        template = get_object_or_404(Template, id=template_id)
 
-        # Build the context for the placeholders
+        # Criar o contrato, se necessário
+        contract, created = Contract.objects.get_or_create(
+            landlord=landlord.user,
+            tenant=tenant.user,
+            unit=unit,
+            template=template,
+            defaults={
+                "status": "active",
+                "rent_value": unit.monthly_rent,
+                "start_date": now(),
+                "end_date": now() + timedelta(days=365),
+                "payment_due_date": 1,
+            },
+        )
+
+        # Gerar o conteúdo do contrato
         context = {
-            "NOME_DO_LANDLORD": f"{landlord.user.first_name} {landlord.user.last_name}",
-            "NOME_DO_TENANT": f"{contract.tenant.user.first_name} {contract.tenant.user.last_name}",
-            "VALOR_DO_ALUGUEL": contract.rent_value,
-            "DATA_DE_INICIO": contract.start_date.strftime("%d/%m/%Y"),
-            "DATA_DE_TERMINO": contract.end_date.strftime("%d/%m/%Y"),
-        }
-
-        # Generate the contract content
+            "NOME_DO_LANDLORD": f"<b>{landlord.user.first_name} {landlord.user.last_name}</b>",
+            "RG_LANDLORD": "<b>00000000</b>",
+            "CPF_LANDLORD": f"<b>{landlord.user.cpf}</b>",
+            "NOME_DO_TENANT": f"<b>{tenant.user.first_name} {tenant.user.last_name}</b>",
+            "RG_TENANT": "<b>00000000</b>",
+            "CPF_TENANT": f"<b>{tenant.user.cpf}</b>",
+            "ENDERECO_UNIDADE": f"<b>{unit.unit_number}, {unit.property.street}, {unit.property.city}</b>",
+            "VALOR_DO_ALUGUEL": f"<b>{contract.rent_value}</b>",
+            "DATA_DE_INICIO": f"<b>{contract.start_date.strftime('%d/%m/%Y')}</b>",
+            "DATA_DE_TERMINO": f"<b>{contract.end_date.strftime('%d/%m/%Y')}</b>",
+            "PRAZO_LOCACAO": "<b>12 meses</b>",
+            "DIA_VENCIMENTO": "<b>5</b>",
+            }
         contract_content = generate_contract(template.content, context)
 
-        return JsonResponse({"contract": contract_content}, status=200)
-
+        return redirect("rent:preview_contract", unit_id=unit.id, tenant_id=tenant.id, template_id=template.id)
+    except Landlord.DoesNotExist:
+        return JsonResponse({"error": "Landlord does not exist or is not authorized."}, status=403)
+    except Unit.DoesNotExist:
+        return JsonResponse({"error": "Unit does not exist or is not associated with the Landlord."}, status=403)
+    except Tenant.DoesNotExist:
+        return JsonResponse({"error": "Tenant does not exist or is not associated with the Landlord."}, status=403)
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
+
+
+@login_required
+def review_contract_data(request, unit_id, tenant_id, template_id):
+    """
+    Allows the Landlord to review and edit all data before generating the contract.
+    """
+    try:
+        landlord = Landlord.objects.get(user=request.user)
+    except Landlord.DoesNotExist:
+        return HttpResponseForbidden("You are not authorized to access this page.")
+
+    # Fetch properties, units, and tenants associated with the Landlord
+    properties = Property.objects.filter(landlord_id=landlord.id)
+    units = Unit.objects.filter(property__in=properties)
+    tenants = Tenant.objects.filter(landlord=landlord)
+
+    # Fetch the specific objects based on IDs
+    unit = units.get(id=unit_id)
+    tenant = tenants.get(id=tenant_id)
+    template = get_object_or_404(Template, id=template_id)
+
+    # Initialize forms
+    landlord_form = LandlordForm(instance=landlord, user_instance=landlord.user)
+    tenant_form = TenantForm(instance=tenant, user_instance=tenant.user)
+    property_form = PropertyForm(instance=unit.property)
+    unit_form = UnitForm(instance=unit)
+
+    if request.method == "POST":
+        if "update_landlord" in request.POST:
+            landlord_form = LandlordForm(request.POST, instance=landlord, user_instance=landlord.user)
+            if landlord_form.is_valid():
+                landlord_form.save()
+                messages.success(request, "Landlord information updated successfully!")
+        elif "update_tenant" in request.POST:
+            tenant_form = TenantForm(request.POST, instance=tenant, user_instance=tenant.user)
+            if tenant_form.is_valid():
+                tenant_form.save()
+                messages.success(request, "Tenant information updated successfully!")
+        elif "update_property" in request.POST:
+            property_form = PropertyForm(request.POST, instance=unit.property)
+            if property_form.is_valid():
+                property_form.save()
+                messages.success(request, "Property information updated successfully!")
+        elif "update_unit" in request.POST:
+            unit_form = UnitForm(request.POST, instance=unit)
+            if unit_form.is_valid():
+                unit_form.save()
+                messages.success(request, "Unit information updated successfully!")
+
+    # Validate the data
+    from .services import validate_contract_data
+    missing_fields = validate_contract_data(landlord, tenant, unit.property, unit)
+
+    context = {
+        "landlord": landlord,
+        "tenant": tenant,
+        "property": unit.property,
+        "unit": unit,
+        "template": template,
+        "missing_fields": missing_fields,
+        "landlord_form": landlord_form,
+        "tenant_form": tenant_form,
+        "property_form": property_form,
+        "unit_form": unit_form,
+    }
+
+    return render(request, "rent/review_contract_data.html", context)

@@ -74,7 +74,7 @@ class Unit(models.Model):
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Updated At")
 
     def __str__(self):
-        return f"Unit {self.unit_number} - {self.property_ptr.name}"
+        return f"Unit {self.unit_number} - {self.property.name}"
 
     class Meta:
         db_table = 'unit'

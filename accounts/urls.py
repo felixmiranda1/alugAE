@@ -18,7 +18,7 @@ urlpatterns = [
     path("tenant/signup/", tenant_signup, name="tenant_signup"),
 
     # URLs for LandLord and Tenant update flow 
-     path("update-profile/", update_profile, name="update_profile"),
+    path("update-profile/", update_profile, name="update_profile"),
     path("update-landlord/", update_landlord, name="update_landlord"),
     path("update-tenant/", update_tenant, name="update_tenant"),
 ]
