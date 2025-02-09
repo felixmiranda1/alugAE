@@ -1,46 +1,97 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
-    <title>Generated Contract</title>
+    <title>Contrato de Locação Residencial</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
+            font-family: "Arial", sans-serif;
             margin: 40px;
+            padding: 30px;
+            border: 2px solid black;
+            line-height: 1.6;
         }
-        h1, h2 {
+        h2 {
             text-align: center;
-            margin-bottom: 30px;
+            text-transform: uppercase;
         }
-        .section {
-            margin-bottom: 20px;
-        }
-        .content {
+        p {
             text-align: justify;
+            line-height: 1.6;
+            margin: 10px 0; /* Remove espaços e evita contornos */
+            border: none; /* Garante que não haja bordas em volta */
+            padding: 0; /* Remove qualquer preenchimento */
+        }
+
+        .bold {
+            font-weight: bold;
         }
         .signature {
-            margin-top: 50px;
-            display: flex;
-            justify-content: space-between;
-        }
-        .signature div {
             text-align: center;
-            border-top: 1px solid #000;
-            width: 30%;
+            margin-top: 40px;
+        }
+        .line {
+            display: block;
+            margin: 10px auto;
+            width: 40%;
+            border-bottom: 1px solid black;
         }
     </style>
 </head>
 <body>
-    <h1>Rental Contract</h1>
 
-    <div class="content">
-        {{ content }}
+    <h2>INSTRUMENTO PARTICULAR DE CONTRATO DE LOCAÇÃO RESIDENCIAL</h2>
+
+    <p>Pelo presente instrumento particular de contrato, de um lado, doravante designado(a) simplesmente 
+        <span class="bold">LOCADOR(A)</span> e/ou <span class="bold">PROPRIETÁRIO(A)</span>: <span class="bold">{{ NOME_DO_LANDLORD }}</span>, 
+        <span class="bold">{{ ESTADO_CIVIL_LANDLORD }}</span>, <span class="bold">{{ PROFISSAO_LANDLORD }}</span>,
+        portador (a) da Cédula de Identidade RG nº <span class="bold">{{ RG_LANDLORD }}</span>, inscrito(a) no CPF nº <span class="bold">{{ CPF_LANDLORD }}</span>.
+    </p>
+
+    <p>E de outro, doravante designado(a) simplesmente <span class="bold">LOCATÁRIO(A)</span> e/ou <span class="bold">INQUILINO(A)</span>: 
+        <span class="bold">{{ NOME_DO_TENANT }}</span>, <span class="bold">{{ ESTADO_CIVIL_TENANT }}</span>, <span class="bold">{{ PROFISSAO_TENANT }}</span>, 
+        portador (a) da Cédula de Identidade RG nº <span class="bold">{{ RG_TENANT }}</span>, inscrito(a) no CPF nº <span class="bold">{{ CPF_TENANT }}</span>.
+    </p>
+
+    <h3>CLÁUSULAS</h3>
+
+    <p>1. Constitui objeto do presente contrato a locação do imóvel residencial situado na 
+        <span class="bold">{{ ENDERECO_IMOVEL }}</span>.
+    </p>
+
+    <p>2. O valor do aluguel será de <span class="bold">{{ VALOR_ALUGUEL }}</span> mensais, devendo ser pago até o dia 
+        <span class="bold">{{ DIA_VENCIMENTO }}</span> de cada mês, ao LOCADOR-PROPRIETÁRIO ou a quem este indicar, mediante recibo escrito entregue ao LOCATÁRIO-INQUILINO.
+    </p>
+
+    <p>3. O valor do aluguel sofrerá reajuste anual, com base na variação do índice <span class="bold">{{ INDICE_REAJUSTE }}</span>.</p>
+
+    <p>4. O presente contrato é celebrado pelo prazo de <span class="bold">{{ PRAZO_LOCACAO }}</span>, com início em 
+        <span class="bold">{{ DATA_INICIO_LOCACAO }}</span> e término em <span class="bold">{{ DATA_DE_TERMINO }}</span>.
+    </p>
+
+    <p>5. As despesas com o consumo de água, luz e telefone correm por conta do <span class="bold">{{ RESPONSAVEL_DESPESAS }}</span>. 
+        O pagamento do IPTU fica por conta do <span class="bold">{{ RESPONSAVEL_IPTU }}</span>.
+    </p>
+
+    <p>6. O LOCATÁRIO-INQUILINO obriga-se a, findo o contrato, devolver o imóvel objeto da locação no mesmo estado em que o recebeu.</p>
+
+    <p>7. Em caso de mora no pagamento do aluguel, fica o LOCADOR-PROPRIETÁRIO autorizado a cobrar multa de 1% ao mês.</p>
+
+    <p>8. As partes contratantes elegem o foro da Comarca da situação do imóvel para dirimir quaisquer litígios oriundos do presente contrato.</p>
+
+    <p>E, por estarem justos e contratados, firmam o presente instrumento em duas vias, na presença de duas testemunhas, que também o assinam.</p>
+
+    <p class="signature">São Bernardo do Campo, <span class="bold">{{ DATA_ASSINATURA }}</span>.</p>
+
+    <div class="signature">
+        <span class="line"></span>
+        <p>LOCADOR - PROPRIETÁRIO</p>
     </div>
 
     <div class="signature">
-        <div>Landlord</div>
-        <div>Tenant</div>
+        <span class="line"></span>
+        <p>LOCATÁRIO - INQUILINO</p>
     </div>
+
 </body>
 </html>

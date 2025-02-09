@@ -54,6 +54,7 @@ class Landlord(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name="landlord")
     marital_status = models.CharField(max_length=20, blank=True, null=True)  # Optional
     profession = models.CharField(max_length=100, blank=True, null=True)  # Optional
+    pix_key = models.CharField(max_length=255, blank=True, null=True)  # Chave PIX do landlord
     date_created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

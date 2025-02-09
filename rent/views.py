@@ -17,6 +17,18 @@ from xhtml2pdf import pisa
 from django.template import engines
 from django.utils.timezone import now
 from datetime import timedelta
+from django.shortcuts import get_object_or_404
+from django.http import HttpResponse
+from django.template.loader import render_to_string
+from xhtml2pdf import pisa
+from io import BytesIO
+from datetime import timedelta
+from django.utils.timezone import now
+from .models import Template
+from properties.models import Unit
+from accounts.models import Landlord, Tenant
+
+
 
 @login_required
 def contract_setup_view(request):
@@ -93,55 +105,49 @@ def preview_contract_view(request, unit_id, tenant_id, template_id):
     View to generate and preview the contract as a PDF.
     """
     landlord = get_object_or_404(Landlord, user=request.user)
-
-    # Fetch properties, units, and tenants associated with the Landlord
     properties = Property.objects.filter(landlord_id=landlord.id)
     units = Unit.objects.filter(property__in=properties)
     tenants = Tenant.objects.filter(landlord=landlord)
 
-    # Fetch filtered objects
     unit = units.get(id=unit_id)
     tenant = tenants.get(id=tenant_id)
     template = get_object_or_404(Template, id=template_id)
 
-    # Build the context for the placeholders
+    # Construir o contexto com os valores reais
     context = {
-        "NOME_DO_LANDLORD": f"{landlord.user.first_name} {landlord.user.last_name}",
+        "NOME_DO_LANDLORD": landlord.user.first_name + " " + landlord.user.last_name,
         "ESTADO_CIVIL_LANDLORD": landlord.marital_status,
         "PROFISSAO_LANDLORD": landlord.profession,
         "CPF_LANDLORD": landlord.user.cpf,
-        "ENDERECO_LANDLORD": "Landlord Address Placeholder",
-        "NOME_DO_TENANT": f"{tenant.user.first_name} {tenant.user.last_name}",
+        "ENDERECO_LANDLORD": f"{unit.property.street}, {unit.property.city}",
+        "NOME_DO_TENANT": tenant.user.first_name + " " + tenant.user.last_name,
         "ESTADO_CIVIL_TENANT": tenant.marital_status,
         "PROFISSAO_TENANT": tenant.profession,
         "CPF_TENANT": tenant.user.cpf,
-        "ENDERECO_TENANT": "Tenant Address Placeholder",
-        "PRAZO_LOCACAO": "12",
-        "DATA_INICIO_LOCACAO": "01/01/2025",
-        "VALOR_ALUGUEL": "1500,00",
-        "DIA_VENCIMENTO": "10",
-        "CONDICOES_ESPECIAIS": "No special conditions.",
-        "DATA_ASSINATURA": "01/01/2025",
+        "ENDERECO_TENANT": f"{unit.unit_number}, {unit.property.street}, {unit.property.city}",
+        "PRAZO_LOCACAO": "12 meses",
+        "DATA_INICIO_LOCACAO": now().strftime("%d/%m/%Y"),
+        "VALOR_ALUGUEL": f"R$ {unit.monthly_rent}",
+        "DIA_VENCIMENTO": "5",
+        "CONDICOES_ESPECIAIS": "Sem condições especiais",
+        "DATA_ASSINATURA": now().strftime("%d/%m/%Y"),
     }
 
-    # Replace placeholders in the content from the database
-    contract_content = template.content
-    for key, value in context.items():
-        placeholder = f"[{key}]"
-        contract_content = contract_content.replace(placeholder, str(value))
+    # Renderizar o contrato preenchido em HTML
+    html_content = render_to_string("rent/layout_template.html", context)
 
-    # Wrap the content with the layout
-    html_content = render_to_string("rent/layout_template.html", {"content": contract_content})
-
-    # Create a response object for the PDF
-    response = HttpResponse(content_type="application/pdf")
-    response["Content-Disposition"] = "inline; filename=contract.pdf"
-
-    # Convert HTML to PDF using xhtml2pdf
-    pisa_status = pisa.CreatePDF(html_content, dest=response)
+    # Criar um buffer de PDF
+    pdf_buffer = BytesIO()
+    pisa_status = pisa.CreatePDF(html_content, dest=pdf_buffer)
 
     if pisa_status.err:
-        return HttpResponse("Error generating PDF", status=500)
+        return HttpResponse("Erro ao gerar o PDF", status=500)
+
+    # Retornar o PDF como resposta HTTP
+    response = HttpResponse(content_type="application/pdf")
+    response["Content-Disposition"] = "inline; filename=Contrato_Locacao.pdf"
+    pdf_buffer.seek(0)
+    response.write(pdf_buffer.read())
 
     return response
 
