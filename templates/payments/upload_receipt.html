@@ -4,47 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Upload de Comprovante PIX</title>
-    <script src="https://unpkg.com/htmx.org@1.9.5"></script>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 40px; text-align: center; }
-        .container { max-width: 500px; margin: auto; }
-        .hidden { display: none; }
-        form { margin-top: 20px; }
-        input, button { margin-top: 10px; display: block; width: 100%; padding: 8px; }
-        button { background-color: #007BFF; color: white; border: none; cursor: pointer; }
-        button:hover { background-color: #0056b3; }
-        .response { margin-top: 20px; padding: 10px; border-radius: 5px; }
-    </style>
+    <script src="https://unpkg.com/htmx.org@1.9.2"></script>
 </head>
 <body>
-    <div class="container">
-        <h2>Enviar Comprovante PIX</h2>
+    <h2>Envie seu comprovante PIX</h2>
 
-        <form id="receipt-form"
-              hx-post="/api/payments/upload/"
-              hx-encoding="multipart/form-data"
-              hx-target="#response-message"
-              hx-swap="innerHTML">
-              
-            <label for="receipt">Selecione o arquivo:</label>
-            <input type="file" name="receipt" id="receipt" required>
+    <form id="upload-form" 
+    hx-post="/api/payments/upload/"
+    hx-encoding="multipart/form-data"
+    enctype="multipart/form-data" 
+  {% csrf_token %}
+  <input type="file" name="receipt" required>
+  <button type="submit">Enviar</button> 
+    </form>
 
-            <label for="tenant_id">Tenant ID:</label>
-            <input type="number" name="tenant_id" required>
 
-            <label for="landlord_id">Landlord ID:</label>
-            <input type="number" name="landlord_id" required>
+    <h3>Resultado:</h3>
+    <pre id="response"></pre>
 
-            <label for="unit_id">Unit ID:</label>
-            <input type="number" name="unit_id" required>
-
-            <label for="contract_id">Contract ID:</label>
-            <input type="number" name="contract_id" required>
-
-            <button type="submit">Enviar Comprovante</button>
-        </form>
-
-        <div id="response-message" class="response"></div>
-    </div>
 </body>
 </html>

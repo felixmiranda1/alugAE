@@ -1,23 +1,34 @@
-import os
+import unittest
 from payments.services.receipt_extractor import PixReceiptExtractor
 
-# Path to the test receipt (modify this based on your actual path)
-TEST_RECEIPT_PATH = "/Users/felixmiranda/alugAE/comprovante2.jpeg"  # Replace with your file path
+# Caminhos de arquivos de teste (substitua pelos arquivos reais)
+TEST_RECEIPTS = [
+    "/Users/felixmiranda/alugAE/comprovante1.jpeg",
+    "//Users/felixmiranda/alugAE/comprovante2.jpeg",
+    "/Users/felixmiranda/alugAE/comprovante3.pdf",
+    "/Users/felixmiranda/alugAE/comprovante4.jpeg"
+]
 
-def test_receipt_extraction():
+class TestReceiptExtraction(unittest.TestCase):
     """
-    Tests the extraction of data from a PIX receipt.
+    Tests the text extraction from different formats of receipts.
     """
-    if not os.path.exists(TEST_RECEIPT_PATH):
-        print(f"File {TEST_RECEIPT_PATH} not found. Please provide a valid test file.")
-        return
 
-    extracted_data = PixReceiptExtractor.process_receipt(TEST_RECEIPT_PATH)
+    def test_extract_text_from_images_and_pdfs(self):
+        """
+        Check if the text is correctly extracted from different receipt formats.
+        """
+        for file_path in TEST_RECEIPTS:
+            with self.subTest(file=file_path):
+                from payments.services.pdf_extractor import PDFReceiptExtractor  # Importação correta
+                extracted_text = (
+                        PixReceiptExtractor.extract_text_from_image(file_path)
+                        if file_path.endswith((".jpeg", ".png"))
+                        else PDFReceiptExtractor.extract_text_from_pdf(file_path)  # Agora chamamos a classe correta!
+                    )
+                print(f"\n🔍 Extracted Text from {file_path}:\n{extracted_text}\n")
 
-    print("\n🔍 Extracted Data:")
-    for key, value in extracted_data.items():
-        print(f"{key}: {value}")
+                self.assertTrue(len(extracted_text) > 10, "Extracted text is too short or empty!")
 
-# Run the test
 if __name__ == "__main__":
-    test_receipt_extraction()
+    unittest.main()

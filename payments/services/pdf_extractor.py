@@ -4,7 +4,6 @@ import os
 import cv2
 from PIL import Image
 import numpy as np
-from payments.services.receipt_extractor import PixReceiptExtractor
 
 # Set the Tesseract path and TESSDATA_PREFIX
 os.environ['TESSDATA_PREFIX'] = '/opt/homebrew/share/tessdata'
@@ -41,6 +40,9 @@ class PDFReceiptExtractor:
 
                 # Convert the first page to an image
                 image_path = PDFReceiptExtractor.convert_pdf_to_image(pdf_path)
+
+                # Import PixReceiptExtractor **dentro da função** para evitar importação circular
+                from payments.services.receipt_extractor import PixReceiptExtractor  
                 
                 # Use OCR on the extracted image
                 return PixReceiptExtractor.process_receipt(image_path)
@@ -69,3 +71,4 @@ class PDFReceiptExtractor:
 
         except Exception as e:
             print(f"❌ Error converting PDF to image: {e}")
+            return None

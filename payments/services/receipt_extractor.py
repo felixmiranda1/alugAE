@@ -3,6 +3,7 @@ import cv2
 import pytesseract
 from PIL import Image
 import numpy as np
+from payments.services.pdf_extractor import PDFReceiptExtractor  # Integração com o PDF extractor
 
 # Set the Tesseract path and TESSDATA_PREFIX
 os.environ['TESSDATA_PREFIX'] = '/opt/homebrew/share/tessdata'
@@ -10,7 +11,7 @@ pytesseract.pytesseract.tesseract_cmd = "/opt/homebrew/bin/tesseract"
 
 class PixReceiptExtractor:
     """
-    Extracts relevant data from PIX payment receipts in image format.
+    Extracts relevant data from PIX payment receipts in image and PDF formats.
     """
 
     @staticmethod
@@ -61,15 +62,21 @@ class PixReceiptExtractor:
         return extracted_text.strip()
 
     @staticmethod
-    def process_receipt(image_path):
+    def process_receipt(file_path):
         """
         Main function to process the receipt and extract information.
 
-        :param image_path: Path to the receipt image.
+        :param file_path: Path to the receipt file (image or PDF).
         :return: Extracted text from OCR.
         """
-        print(f"🔍 Processing receipt: {image_path}")
-        extracted_text = PixReceiptExtractor.extract_text_from_image(image_path)
+        print(f"🔍 Processing receipt: {file_path}")
+
+        if file_path.lower().endswith((".jpeg", ".png", ".jpg")):
+            extracted_text = PixReceiptExtractor.extract_text_from_image(file_path)
+        elif file_path.lower().endswith(".pdf"):
+            extracted_text = PDFReceiptExtractor.extract_text_from_pdf(file_path)  # Agora usa o `pdf_extractor.py`
+        else:
+            raise ValueError("Unsupported file format. Only JPEG, PNG, and PDF are supported.")
+
         print(f"\n📝 Extracted Text:\n{extracted_text}\n")
-        
         return extracted_text

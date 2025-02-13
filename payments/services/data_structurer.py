@@ -15,33 +15,16 @@ class ReceiptDataStructurer:
     def parse_date_from_text(text):
         """
         Attempts to extract and standardize the date from a receipt text.
-        Supports formats like "O9 FEV 2025 - 12:06:47" and converts to dd/mm/yyyy HH:MM:SS.
+        Supports formats like "O9 FEV 2025 - 12:06:47" and converts to YYYY-MM-DDTHH:MM:SS.
         """
-        date_match = re.search(r'(\d{1,2})\s*([A-Z]{3})\s*(\d{2,4})', text, re.IGNORECASE)
-        time_match = re.search(r'(\d{2}:\d{2}(:\d{2})?)', text)
+        date_match = re.search(r'(\d{1,2})\s*([A-Z]{3})\s*(\d{2,4}) - (\d{2}:\d{2}:\d{2})', text, re.IGNORECASE)
 
         if date_match:
-            day = date_match.group(1).zfill(2)  # Garante dois dígitos para o dia
-            month_str = date_match.group(2).upper()
-            year = date_match.group(3)
-
-            month = ReceiptDataStructurer.MONTHS.get(month_str, "01")  # Converte mês para número
-
-            # Ajusta ano se for fornecido com dois dígitos
+            day, month_str, year, time = date_match.groups()
+            month = ReceiptDataStructurer.MONTHS.get(month_str.upper(), "01")
             if len(year) == 2:
                 year = f"20{year}"
-
-            formatted_date = f"{day}/{month}/{year}"
-        else:
-            formatted_date = None
-
-        formatted_time = time_match.group(1) if time_match else "00:00:00"
-
-        if formatted_date:
-            try:
-                return datetime.strptime(f"{formatted_date} {formatted_time}", "%d/%m/%Y %H:%M:%S")
-            except ValueError:
-                return None  # Retorna None se a conversão falhar
+            return f"{year}-{month}-{day.zfill(2)}T{time}"
 
         return None
 
@@ -58,36 +41,34 @@ class ReceiptDataStructurer:
 
         data = {}
 
-        # Extract amount
-        amount_match = re.search(r'(?i)R\$\s?(\d{1,3}(?:[.,]\d{3})*[.,]\d{2})', extracted_text)
+        # 🔹 Extract `amount`
+        amount_match = re.search(r'(?i)valor\s*R\$\s?(\d+(?:[.,]\d{2})?)', extracted_text)
         if amount_match:
-            data["amount"] = amount_match.group(1).replace(".", "").replace(",", ".")
+            data["amount"] = amount_match.group(1).replace(",", ".")
 
-        # Extract transaction ID
-        transaction_match = re.search(r'\b(E[A-Za-z0-9]{31})\b', extracted_text)
-        if transaction_match:
-            data["transaction_id"] = transaction_match.group(1)
-
-        # Extract payer name
-        payer_match = re.search(r'(?i)(?:Pagador|De|Remetente)[:\s]+([^\n]+)', extracted_text)
+        # 🔹 Extract `payer_name`
+        payer_match = re.search(r'Origem\s*Nome\s+([^\n]+)', extracted_text)
         if payer_match:
             data["payer_name"] = payer_match.group(1).strip()
 
-        # Extract receiver name
-        receiver_match = re.search(r'(?i)(?:Beneficiário|Para|Recebedor)[:\s]+([^\n]+)', extracted_text)
+        # 🔹 Extract `receiver_name`
+        receiver_match = re.search(r'Destino\s*Nome\s+([^\n]+)', extracted_text)
         if receiver_match:
             data["receiver_name"] = receiver_match.group(1).strip()
 
-        # Extract receiver PIX key
-        pix_key_match = re.search(r'(?i)(?:Chave Pix|PIX)[:\s]+([^\n]+)', extracted_text)
+        # 🔹 Extract `receiver_pix_key` (Chave PIX do recebedor)
+        pix_key_match = re.search(r'Chave Pix[:\s]+([\w@.-]+)', extracted_text, re.IGNORECASE)
         if pix_key_match:
             data["receiver_pix_key"] = pix_key_match.group(1).strip()
 
-        # Extract payment date
+        # 🔹 Extract `transaction_id` (ID da transação)
+        transaction_match = re.search(r'ID da transa[cç][aã]o:\s*([A-Za-z0-9]+)', extracted_text)
+        if transaction_match:
+            data["transaction_id"] = transaction_match.group(1).strip()
+
+        # 🔹 Extract `payment_date`
         payment_date = ReceiptDataStructurer.parse_date_from_text(extracted_text)
         if payment_date:
             data["payment_date"] = payment_date
-        else:
-            data["error"] = "Failed to extract payment date"
 
         return data
