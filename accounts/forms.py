@@ -79,21 +79,21 @@ class TenantSignupForm(forms.ModelForm):
     cpf = forms.CharField(max_length=14, required=True)
     marital_status = forms.CharField(max_length=20, required=True)
     profession = forms.CharField(max_length=100, required=True)
-    adoption_code = forms.CharField(max_length=8, required=True)
+    #adoption_code = forms.CharField(max_length=8, required=True)
 
     class Meta:
         model = CustomUser
         fields = ['email', 'phone', 'password', 'first_name', 'last_name', 'cpf']
 
-    def clean_adoption_code(self):
-        code = self.cleaned_data.get('adoption_code')
-        try:
-            adoption_code = AdoptionCode.objects.get(code=code, is_used=False)
-            if adoption_code.expires_at < now():
-                raise forms.ValidationError("The adoption code has expired.")
-            return adoption_code
-        except AdoptionCode.DoesNotExist:
-            raise forms.ValidationError("Invalid adoption code.")
+    # def clean_adoption_code(self):
+    #     code = self.cleaned_data.get('adoption_code')
+    #     try:
+    #         adoption_code = AdoptionCode.objects.get(code=code, is_used=False)
+    #         if adoption_code.expires_at < now():
+    #             raise forms.ValidationError("The adoption code has expired.")
+    #         return adoption_code
+    #     except AdoptionCode.DoesNotExist:
+    #         raise forms.ValidationError("Invalid adoption code.")
 
     def save(self, commit=True):
         # Extract username from the email
@@ -111,19 +111,23 @@ class TenantSignupForm(forms.ModelForm):
         user.last_name = self.cleaned_data["last_name"]
         user.cpf = self.cleaned_data["cpf"]
         user.save()
+        
+        # Definir Landlord padrão (ID 1)
+        landlord = Landlord.objects.get(id=1)  # Obtém o Landlord com ID 1
 
-        adoption_code = self.cleaned_data.get('adoption_code')
+        #adoption_code = self.cleaned_data.get('adoption_code')
         # Create the Tenant profile
         tenant = Tenant.objects.create(
             user=user,
             marital_status=self.cleaned_data["marital_status"],
-            profession=self.cleaned_data["profession"]
+            profession=self.cleaned_data["profession"],
+            landlord=landlord  # Associando ao Landlord 1
         )
 
         # Mark the adoption code as used
-        adoption_code = self.cleaned_data.pop('adoption_code')
-        adoption_code.is_used = True
-        adoption_code.save()
+        # adoption_code = self.cleaned_data.pop('adoption_code')
+        # adoption_code.is_used = True
+        # adoption_code.save()
 
         return user, tenant
 # Form for updating Landlord profile

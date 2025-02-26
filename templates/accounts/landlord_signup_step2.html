@@ -1,12 +1,43 @@
 {% extends "base.html" %}
 
+{% block title %}Cadastro de Proprietário - Passo 2 | alugAE{% endblock %}
+
 {% block content %}
-<h2>Landlord Registration - Step 2</h2>
-<p>You can skip this step and complete your profile later.</p>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Complete Registration</button>
-</form>
-<a href="{% url 'account_login' %}">Skip and go to Login</a>
+<div class="flex flex-col items-center justify-center min-h-screen px-6 py-8">
+    <div class="w-full max-w-md bg-white shadow-md rounded-lg p-8">
+        
+        <h2 class="text-2xl font-bold text-green-700 text-center">Dados complementares</h2>
+        <p class="text-gray-600 text-center mt-3">
+            Seu cadastro foi concluído! Agora, preencha os dados abaixo para desbloquear todas as funcionalidades da plataforma.
+        </p>
+
+        <form method="post" class="mt-8 w-full flex flex-col gap-4">
+            {% csrf_token %}
+
+            <!-- Renderiza os campos do formulário com estilos personalizados -->
+            <div class="flex flex-col gap-3">
+                {% for field in form %}
+                    <label class="text-gray-700 font-medium">{{ field.label }}</label>
+                    <input type="{{ field.field.widget.input_type }}" name="{{ field.name }}" 
+                           class="input input-bordered w-full bg-gray-200 text-gray-800 rounded-lg py-3">
+                {% endfor %}
+            </div>
+
+            <!-- Botão de Completar Cadastro -->
+            <button type="submit" class="btn btn-success w-full text-lg py-3 mt-4">
+                Completar Cadastro
+            </button>
+        </form>
+
+        <!-- Opção de Pular -->
+        <a href="{% url 'home' %}" class="block text-center text-gray-600 text-sm mt-6 hover:underline">
+            Pular e concluir depois
+        </a>
+
+        <!-- Aviso logo abaixo do botão "Pular" -->
+        <div class="bg-yellow-100 text-yellow-800 p-4 mt-4 rounded-lg text-sm">
+            ⚠️ Importante: Sem estes dados, você não poderá gerar contratos e ativar aluguéis. Ainda é possível preenche-los posteriormente.
+        </div>
+    </div>
+</div>
 {% endblock %}

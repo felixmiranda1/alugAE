@@ -1,11 +1,36 @@
 {% extends "base.html" %}
 
+{% block title %}Editar Perfil - Inquilino | alugAE{% endblock %}
+
 {% block content %}
-<h2>Update Your Profile - Tenant</h2>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Update</button>
-</form>
-<a href="{% url 'accounts:profile' %}">Back to Profile</a>
+<div class="flex flex-col items-center justify-center min-h-screen px-6 py-8">
+    <div class="w-full max-w-lg bg-white shadow-md rounded-lg p-8">
+        
+        <h2 class="text-2xl font-bold text-green-700 text-center mb-4">Editar Perfil - Inquilino</h2>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="space-y-4">
+                {% for field in form %}
+                <div>
+                    <label class="text-gray-700 font-medium">{{ field.label }}</label>
+                    <input type="{{ field.field.widget.input_type }}" name="{{ field.name }}" value="{{ field.value|default_if_none:'' }}" 
+                           class="input input-bordered w-full bg-gray-200 text-gray-800 rounded-lg py-3">
+                    {% if field.errors %}
+                        <p class="text-red-500 text-sm">{{ field.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+
+            <button type="submit" class="btn btn-success w-full text-lg py-3 mt-6">Atualizar Perfil</button>
+        </form>
+
+        <div class="mt-6 text-center">
+            <a href="{% url 'accounts:profile' %}" class="btn btn-outline btn-success w-full">Voltar ao Perfil</a>
+        </div>
+
+    </div>
+</div>
 {% endblock %}

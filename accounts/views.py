@@ -1,8 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import EssentialLandlordForm, OptionalLandlordForm, TenantSignupForm, LandlordUpdateForm, TenantUpdateForm
-from .models import CustomUser, Landlord
+from .models import CustomUser, Landlord, Tenant 
 from django.contrib.auth.decorators import login_required
-
+from django.contrib.auth import login
+from django.contrib.auth import get_backends
 
 def home(request):
     """
@@ -10,6 +11,9 @@ def home(request):
     """
     return render(request, "home.html")
 
+@login_required
+def landlord_panel(request):
+    return render(request, "accounts/landlord_panel.html")
 
 @login_required
 def profile(request):
@@ -38,8 +42,16 @@ def landlord_signup_step1(request):
             user = form.save()
             # Create an empty landlord profile linked to the user
             Landlord.objects.create(user=user)
+
+            # Obter o backend correto
+            backend = get_backends()[0]  # Pega o primeiro backend disponível
+            user.backend = f"{backend.__module__}.{backend.__class__.__name__}"  # Define o backend explicitamente
+
+            # Loga o usuário automaticamente após o Step 1
+            login(request, user, backend=user.backend)
+
             # Redirect to the second step of the registration process
-            return redirect("accounts:landlord_signup_step2", user_id=user.id)
+            return redirect("accounts:landlord_signup_step2", user_id=user.id) 
     else:
         form = EssentialLandlordForm()
 
@@ -49,11 +61,12 @@ def landlord_signup_step1(request):
 # View for the second part of registration (Optional Data)
 @login_required
 def landlord_signup_step2(request, user_id):
+
     user = get_object_or_404(CustomUser, id=user_id)
 
     # Ensure the logged-in user matches the user being edited
-    if request.user != user:
-        return redirect("accounts:landlord_signup_step1")  # Redirect to step 1 if unauthorized
+    if not request.user.is_authenticated or request.user != user:
+        return redirect("accounts:landlord_signup_step1")
 
     if request.method == "POST":
         form = OptionalLandlordForm(request.POST)
@@ -130,3 +143,10 @@ def update_tenant(request):
     else:
         form = TenantUpdateForm(instance=request.user)
     return render(request, "accounts/update_tenant.html", {"form": form})
+
+@login_required
+def list_tenants(request):
+    # Obtém todos os tenants associados ao Landlord logado
+    tenants = Tenant.objects.filter(landlord=request.user.landlord)
+    
+    return render(request, "accounts/list_tenants.html", {"tenants": tenants})

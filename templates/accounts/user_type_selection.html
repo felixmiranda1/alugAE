@@ -1,10 +1,26 @@
 {% extends "base.html" %}
 
+{% block title %}Escolha seu Tipo de Conta - alugAE{% endblock %}
+
 {% block content %}
-<h2>Select Your Role</h2>
-<form method="post">
-    {% csrf_token %}
-    <button type="submit" name="user_type" value="landlord">I am a Landlord</button>
-    <button type="submit" name="user_type" value="tenant">I am a Tenant</button>
-</form>
+<div class="flex flex-col items-center justify-center min-h-[70vh] px-6">
+    <div class="w-full max-w-md bg-white shadow-md rounded-lg p-6 text-center">
+        <h2 class="text-2xl font-bold text-green-700">Como deseja se cadastrar?</h2>
+        <p class="text-gray-600 mt-2">
+            Escolha uma opção abaixo para continuar com seu cadastro.
+        </p>
+        
+        <form method="post" class="mt-6 w-full flex flex-col gap-4">
+            {% csrf_token %}
+            <button type="submit" name="user_type" value="landlord" 
+                class="btn btn-success w-full text-lg py-3">
+                Sou proprietário
+            </button>
+            <button type="submit" name="user_type" value="tenant" 
+                class="btn btn-outline btn-success w-full text-lg py-3">
+                Sou inquilino
+            </button>
+        </form>
+    </div>
+</div>
 {% endblock %}

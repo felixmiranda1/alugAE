@@ -1,26 +1,44 @@
-<!DOCTYPE html>
-<html lang="pt">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload de Comprovante PIX</title>
-    <script src="https://unpkg.com/htmx.org@1.9.2"></script>
-</head>
-<body>
-    <h2>Envie seu comprovante PIX</h2>
+{% extends "base.html" %}
 
-    <form id="upload-form" 
-    hx-post="/api/payments/upload/"
-    hx-encoding="multipart/form-data"
-    enctype="multipart/form-data" 
-  {% csrf_token %}
-  <input type="file" name="receipt" required>
-  <button type="submit">Enviar</button> 
-    </form>
+{% block title %}Upload de Comprovante PIX | alugAE{% endblock %}
 
+{% block content %}
+<div class="flex flex-col items-center justify-center min-h-screen px-6 py-8">
+    <div class="w-full max-w-lg bg-white shadow-md rounded-lg p-8">
 
-    <h3>Resultado:</h3>
-    <pre id="response"></pre>
+        <h2 class="text-2xl font-bold text-green-700 text-center mb-4">📤 Enviar Comprovante PIX</h2>
+        <p class="text-gray-600 text-center mb-6">Faça o upload do seu comprovante de pagamento para validação.</p>
 
-</body>
-</html>
+        <!-- Formulário de Upload -->
+        <form id="upload-form" 
+              hx-post="/api/payments/upload/"
+              hx-encoding="multipart/form-data"
+              enctype="multipart/form-data"
+              class="space-y-4">
+            {% csrf_token %}
+
+            <!-- Input de Arquivo -->
+            <div class="flex flex-col">
+                <label class="text-gray-700 font-medium mb-1">📎 Selecione o Arquivo</label>
+                <input type="file" name="receipt" required 
+                       class="file-input file-input-bordered bg-gray-200 text-gray-800 rounded-lg py-3 w-full">
+            </div>
+
+            <!-- Botão de Envio -->
+            <button type="submit" class="btn btn-success w-full">📤 Enviar Comprovante</button>
+        </form>
+
+        <!-- Feedback do Resultado -->
+        <div class="mt-6">
+            <h3 class="text-lg font-semibold text-gray-800">📄 Resultado:</h3>
+            <pre id="response" class="bg-gray-100 text-gray-800 p-4 rounded-lg"></pre>
+        </div>
+
+        <!-- Botão de Voltar -->
+        <div class="mt-6 text-center">
+            <a href="{% url 'accounts:landlord_panel' %}" class="btn btn-outline btn-success w-full">⬅️ Voltar ao Painel</a>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

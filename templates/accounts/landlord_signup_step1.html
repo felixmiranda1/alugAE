@@ -1,10 +1,93 @@
 {% extends "base.html" %}
 
+{% block title %}Cadastro de Proprietário - alugAE{% endblock %}
+
 {% block content %}
-<h2>Landlord Registration - Step 1</h2>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Continue to Step 2</button>
-</form>
+<div class="flex flex-col items-center justify-center min-h-screen px-6 py-8">
+    <div class="w-full max-w-md bg-white shadow-md rounded-lg p-8">
+        
+        <!-- Barra de Progresso -->
+        <div class="w-full bg-gray-200 rounded-full h-2 mb-6">
+            <div id="progress-bar" class="bg-green-500 h-2 rounded-full w-1/2"></div>
+        </div>
+
+        <h2 class="text-2xl font-bold text-green-700 text-center">Cadastro de Proprietário</h2>
+        <p class="text-gray-600 text-center mt-3">
+            Faça seu cadastro em poucos segundos.
+        </p>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <!-- Etapa 1 - Informações Pessoais -->
+            <div id="step-1" class="step">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">📋 Informações Pessoais</h3>
+
+                <label class="text-gray-700 font-medium">Primeiro Nome</label>
+                <input type="text" name="first_name" required class="input input-bordered w-full bg-gray-200 text-gray-800 rounded-lg py-3">
+
+                <label class="text-gray-700 font-medium mt-4">Sobrenome(s)</label>
+                <input type="text" name="last_name" required class="input input-bordered w-full bg-gray-200 text-gray-800 rounded-lg py-3">
+
+                <button type="button" class="btn btn-success w-full mt-6 next-step">Próximo</button>
+            </div>
+
+            <!-- Etapa 2 - Dados de Acesso -->
+            <div id="step-2" class="step hidden">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">🔑 Dados de Acesso</h3>
+
+                <label class="text-gray-700 font-medium">Email</label>
+                <input type="email" name="email" required class="input input-bordered w-full bg-gray-200 text-gray-800 rounded-lg py-3">
+
+                <label class="text-gray-700 font-medium mt-4">Telefone</label>
+                <input type="text" name="phone" required class="input input-bordered w-full bg-gray-200 text-gray-800 rounded-lg py-3">
+
+                <label class="text-gray-700 font-medium mt-4">Senha</label>
+                <input type="password" name="password" required class="input input-bordered w-full bg-gray-200 text-gray-800 rounded-lg py-3">
+
+                <label class="text-gray-700 font-medium mt-4">Confirme sua Senha</label>
+                <input type="password" name="password_confirm" required class="input input-bordered w-full bg-gray-200 text-gray-800 rounded-lg py-3">
+
+                <div class="flex justify-between mt-6">
+                    <button type="button" class="btn btn-outline btn-success prev-step">Voltar</button>
+                    <button type="submit" class="btn btn-success">Finalizar Cadastro</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Script para fazer a navegação entre as etapas sem recarregar -->
+<script>
+    const steps = document.querySelectorAll('.step');
+    const progressBar = document.getElementById('progress-bar');
+    let currentStep = 0;
+
+    function showStep(stepIndex) {
+        steps.forEach((step, index) => {
+            step.classList.toggle('hidden', index !== stepIndex);
+        });
+        progressBar.style.width = `${(stepIndex + 1) * 50}%`;
+    }
+
+    document.querySelectorAll('.next-step').forEach(button => {
+        button.addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                showStep(currentStep);
+            }
+        });
+    });
+
+    document.querySelectorAll('.prev-step').forEach(button => {
+        button.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                showStep(currentStep);
+            }
+        });
+    });
+
+    showStep(currentStep);
+</script>
 {% endblock %}

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Painel do Proprietário | alugAE{% endblock %}
+
+{% block content %}
+<div class="flex flex-col items-center justify-center min-h-screen px-6 py-8">
+    <div class="w-full max-w-lg bg-white shadow-md rounded-lg p-8">
+
+        <h2 class="text-2xl font-bold text-green-700 text-center mb-4">🏠 Painel do Proprietário</h2>
+        <p class="text-gray-600 text-center">Bem-vindo, <strong>{{ user.first_name }}</strong>!</p>
+
+        <!-- Informações básicas -->
+        <div class="border-b pb-4 mt-4">
+            <p class="text-gray-700"><strong>Email:</strong> {{ user.email }}</p>
+            <p class="text-gray-700"><strong>Telefone:</strong> {{ user.phone }}</p>
+        </div>
+
+        <!-- Gerenciamento de Propriedades -->
+        <h3 class="text-lg font-semibold text-gray-800 mt-6">📍 Propriedades</h3>
+        <div class="grid grid-cols-2 gap-4 mt-4">
+            <a href="{% url 'properties:property_list' %}" class="btn btn-success w-full">🏠 Minhas Propriedades</a>
+            <a href="{% url 'properties:property_add' %}" class="btn btn-success w-full">➕ Adicionar Propriedade</a>
+        </div>
+
+        <!-- Gerenciamento de Inquilinos -->
+        <h3 class="text-lg font-semibold text-gray-800 mt-6">👥 Inquilinos</h3>
+        <div class="grid grid-cols-1 gap-4 mt-4">
+            <a href="{% url 'accounts:list_tenants' %}" class="btn btn-success w-full">📋 Listar Inquilinos</a>
+        </div>
+
+        <!-- Gestão de Contratos -->
+        <h3 class="text-lg font-semibold text-gray-800 mt-6">📑 Gestão de Contratos</h3>
+        <div class="grid grid-cols-2 gap-4 mt-4">
+            <a href="{% url 'rent:contract_setup' %}" class="btn btn-success w-full">📝 Criar Contrato</a>
+            <a href="{% url 'rent:preview_contract' unit_id=1 tenant_id=1 template_id=1 %}" class="btn btn-success w-full">👀 Pré-visualizar Contrato</a>
+        </div>
+
+        <!-- Pagamentos -->
+        <h3 class="text-lg font-semibold text-gray-800 mt-6">💰 Pagamentos</h3>
+        <div class="grid grid-cols-1 gap-4 mt-4">
+            <a href="{% url 'upload_receipt' %}" class="btn btn-success w-full">📤 Enviar Comprovante</a>
+        </div>
+
+        <!-- Perfil e Logout -->
+        <h3 class="text-lg font-semibold text-gray-800 mt-6">⚙️ Configurações</h3>
+        <div class="grid grid-cols-1 gap-4 mt-4">
+            <a href="{% url 'accounts:update_landlord' %}" class="btn btn-success w-full">🛠 Editar Perfil</a>
+            <a href="{% url 'account_logout' %}" class="btn btn-error w-full">🚪 Sair</a>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

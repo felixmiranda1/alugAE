@@ -1,47 +1,136 @@
-<h2>Review Contract Data</h2>
+{% extends "base.html" %}
 
-{% if missing_fields %}
-<p style="color: red;">⚠ Some required fields are missing:</p>
-<ul>
-    {% for field in missing_fields %}
-    <li style="color: red;">{{ field }}</li>
-    {% endfor %}
-</ul>
-<p>Please complete the missing fields before proceeding.</p>
-{% else %}
-<p>All data is complete!</p>
-{% endif %}
+{% block title %}Revisar Dados do Contrato | alugAE{% endblock %}
 
-<h3>Landlord Information</h3>
-<form method="post">
-    {% csrf_token %}
-    {{ landlord_form.as_p }}
-    <button type="submit" name="update_landlord">Update Landlord</button>
-</form>
+{% block content %}
+<div class="flex flex-col items-center justify-center min-h-screen px-6 py-8">
+    <div class="w-full max-w-lg bg-white shadow-md rounded-lg p-8">
+        
+        <h2 class="text-2xl font-bold text-green-700 text-center mb-4">📑 Revisar Dados do Contrato</h2>
 
-<h3>Tenant Information</h3>
-<form method="post">
-    {% csrf_token %}
-    {{ tenant_form.as_p }}
-    <button type="submit" name="update_tenant">Update Tenant</button>
-</form>
+        <!-- Exibir mensagens de erro caso existam campos faltantes -->
+        {% if missing_fields %}
+            <div class="alert alert-error text-sm text-red-700 bg-red-100 p-4 rounded-lg mb-4">
+                ⚠ Alguns campos obrigatórios estão ausentes:
+                <ul class="list-disc list-inside mt-2">
+                    {% for field in missing_fields %}
+                        <li class="text-red-600">{{ field }}</li>
+                    {% endfor %}
+                </ul>
+                <p class="mt-2">Complete os campos antes de continuar.</p>
+            </div>
+        {% else %}
+            <div class="alert alert-success text-sm text-green-700 bg-green-100 p-4 rounded-lg mb-4">
+                ✅ Todos os dados estão completos!
+            </div>
 
-<h3>Property Information</h3>
-<form method="post">
-    {% csrf_token %}
-    {{ property_form.as_p }}
-    <button type="submit" name="update_property">Update Property</button>
-</form>
+            <!-- 🔥 Botão de gerar contrato aparece no topo caso tudo esteja preenchido -->
+            <form method="post" action="{% url 'rent:generate_contract' unit_id=unit.id tenant_id=tenant.id template_id=template.id %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success w-full mb-4">📜 Gerar Contrato</button>
+            </form>
+        {% endif %}
 
-<h3>Unit Information</h3>
-<form method="post">
-    {% csrf_token %}
-    {{ unit_form.as_p }}
-    <button type="submit" name="update_unit">Update Unit</button>
-</form>
+        <!-- 🔥 Seções de informações editáveis -->
+        <div class="space-y-6">
 
-<!-- Button to Generate Contract -->
-<form method="post" action="{% url 'rent:generate_contract' unit_id=unit.id tenant_id=tenant.id template_id=template.id %}">
-    {% csrf_token %}
-    <button type="submit" style="background-color: green;">Generate Contract</button>
-</form>
+            <!-- Proprietário -->
+            <div class="border rounded-lg p-4 bg-gray-100">
+                <h3 class="text-lg font-semibold text-gray-800 flex justify-between">
+                    🏠 Dados do Proprietário
+                    <button onclick="toggleEdit('landlord-form')" class="text-green-600 text-sm">✏️ Editar</button>
+                </h3>
+                <div id="landlord-display">
+                    <p><strong>Nome:</strong> {{ landlord_form.instance.user.first_name }} {{ landlord_form.instance.user.last_name }}</p>
+                    <p><strong>Email:</strong> {{ landlord_form.instance.user.email }}</p>
+                </div>
+                <form method="post" id="landlord-form" class="hidden space-y-3">
+                    {% csrf_token %}
+                    {{ landlord_form.as_p|safe }}
+                    <button type="submit" name="update_landlord" class="btn btn-outline btn-success w-full">💾 Atualizar Proprietário</button>
+                </form>
+            </div>
+
+            <!-- Inquilino -->
+            <div class="border rounded-lg p-4 bg-gray-100">
+                <h3 class="text-lg font-semibold text-gray-800 flex justify-between">
+                    👤 Dados do Inquilino
+                    <button onclick="toggleEdit('tenant-form')" class="text-green-600 text-sm">✏️ Editar</button>
+                </h3>
+                <div id="tenant-display">
+                    <p><strong>Nome:</strong> {{ tenant_form.instance.user.first_name }} {{ tenant_form.instance.user.last_name }}</p>
+                    <p><strong>Email:</strong> {{ tenant_form.instance.user.email }}</p>
+                </div>
+                <form method="post" id="tenant-form" class="hidden space-y-3">
+                    {% csrf_token %}
+                    {{ tenant_form.as_p|safe }}
+                    <button type="submit" name="update_tenant" class="btn btn-outline btn-success w-full">💾 Atualizar Inquilino</button>
+                </form>
+            </div>
+
+            <!-- Propriedade -->
+            <div class="border rounded-lg p-4 bg-gray-100">
+                <h3 class="text-lg font-semibold text-gray-800 flex justify-between">
+                    📍 Dados da Propriedade
+                    <button onclick="toggleEdit('property-form')" class="text-green-600 text-sm">✏️ Editar</button>
+                </h3>
+                <div id="property-display">
+                    <p><strong>Nome:</strong> {{ property_form.instance.name }}</p>
+                    <p><strong>Endereço:</strong> {{ property_form.instance.street }}, {{ property_form.instance.city }}</p>
+                </div>
+                <form method="post" id="property-form" class="hidden space-y-3">
+                    {% csrf_token %}
+                    {{ property_form.as_p|safe }}
+                    <button type="submit" name="update_property" class="btn btn-outline btn-success w-full">💾 Atualizar Propriedade</button>
+                </form>
+            </div>
+
+            <!-- Unidade -->
+            <div class="border rounded-lg p-4 bg-gray-100">
+                <h3 class="text-lg font-semibold text-gray-800 flex justify-between">
+                    🏘️ Dados da Unidade
+                    <button onclick="toggleEdit('unit-form')" class="text-green-600 text-sm">✏️ Editar</button>
+                </h3>
+                <div id="unit-display">
+                    <p><strong>Número:</strong> {{ unit_form.instance.unit_number }}</p>
+                    <p><strong>Status:</strong> {{ unit_form.instance.status }}</p>
+                </div>
+                <form method="post" id="unit-form" class="hidden space-y-3">
+                    {% csrf_token %}
+                    {{ unit_form.as_p|safe }}
+                    <button type="submit" name="update_unit" class="btn btn-outline btn-success w-full">💾 Atualizar Unidade</button>
+                </form>
+            </div>
+
+        </div>
+
+        <!-- Botão de Voltar -->
+        <div class="mt-6 text-center">
+            <a href="{% url 'accounts:landlord_panel' %}" class="btn btn-outline btn-success w-full">⬅️ Voltar ao Painel</a>
+        </div>
+
+    </div>
+</div>
+
+<!-- 🔥 Script para alternar exibição dos formulários -->
+<script>
+    function toggleEdit(formId) {
+        let form = document.getElementById(formId);
+        let displayDiv = document.getElementById(formId.replace('-form', '-display'));
+        
+        if (form.classList.contains("hidden")) {
+            form.classList.remove("hidden");
+            displayDiv.classList.add("hidden");
+
+            // 🔥 Ajusta os campos do formulário ao padrão visual
+            form.querySelectorAll("input, select, textarea").forEach(field => {
+                field.classList.add("bg-gray-200", "text-gray-800", "rounded-lg", "py-3", "w-full");
+            });
+        } else {
+            form.classList.add("hidden");
+            displayDiv.classList.remove("hidden");
+        }
+    }
+</script>
+
+{% endblock %}

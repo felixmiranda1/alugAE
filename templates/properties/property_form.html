@@ -1,17 +1,78 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Propriedade</title>
-</head>
-<body>
-    <h1>{{ form.instance.pk|yesno:"Editar Propriedade,Adicionar Propriedade" }}</h1>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Salvar</button>
-    </form>
-    <a href="{% url 'property_list' %}">Voltar para a Lista</a>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}{{ form.instance.pk|yesno:"Editar Propriedade,Adicionar Propriedade" }} | alugAE{% endblock %}
+
+{% block content %}
+<div class="flex flex-col items-center justify-center min-h-screen px-6 py-8">
+    <div class="w-full max-w-lg bg-white shadow-md rounded-lg p-8">
+        
+        <h2 class="text-2xl font-bold text-green-700 text-center mb-4">
+            {{ form.instance.pk|yesno:"✏️ Editar Propriedade,➕ Adicionar Propriedade" }}
+        </h2>
+
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+
+            <div class="flex flex-col">
+                <label class="text-gray-700 font-medium mb-1">🏠 Nome da Propriedade</label>
+                <input type="text" name="name" value="{{ form.name.value|default_if_none:'' }}" 
+                       class="input input-bordered bg-gray-200 text-gray-800 rounded-lg py-3 w-full">
+            </div>
+
+            <div class="flex flex-col">
+                <label class="text-gray-700 font-medium mb-1">📍 Rua</label>
+                <input type="text" name="street" value="{{ form.street.value|default_if_none:'' }}" 
+                       class="input input-bordered bg-gray-200 text-gray-800 rounded-lg py-3 w-full">
+            </div>
+
+            <div class="flex flex-col">
+                <label class="text-gray-700 font-medium mb-1">🏢 Número</label>
+                <input type="text" name="number" value="{{ form.number.value|default_if_none:'' }}" 
+                       class="input input-bordered bg-gray-200 text-gray-800 rounded-lg py-3 w-full">
+            </div>
+
+            <div class="flex flex-col">
+                <label class="text-gray-700 font-medium mb-1">📝 Complemento</label>
+                <input type="text" name="complement" value="{{ form.complement.value|default_if_none:'' }}" 
+                       class="input input-bordered bg-gray-200 text-gray-800 rounded-lg py-3 w-full">
+            </div>
+
+            <div class="flex flex-col">
+                <label class="text-gray-700 font-medium mb-1">🏙️ Cidade</label>
+                <input type="text" name="city" value="{{ form.city.value|default_if_none:'' }}" 
+                       class="input input-bordered bg-gray-200 text-gray-800 rounded-lg py-3 w-full">
+            </div>
+
+            <div class="flex flex-col">
+                <label class="text-gray-700 font-medium mb-1">🌎 Estado</label>
+                <input type="text" name="state" value="{{ form.state.value|default_if_none:'' }}" 
+                       class="input input-bordered bg-gray-200 text-gray-800 rounded-lg py-3 w-full">
+            </div>
+
+            <div class="flex flex-col">
+                <label class="text-gray-700 font-medium mb-1">📮 CEP</label>
+                <input type="text" name="zip_code" value="{{ form.zip_code.value|default_if_none:'' }}" 
+                       class="input input-bordered bg-gray-200 text-gray-800 rounded-lg py-3 w-full">
+            </div>
+
+            <div class="flex flex-col">
+                <label class="text-gray-700 font-medium flex items-center gap-2">
+                    <input type="checkbox" name="is_standalone" {% if form.is_standalone.value %}checked{% endif %} 
+                           class="checkbox checkbox-success"> Propriedade Independente
+                </label>
+                <p class="text-sm text-gray-500 mt-1">
+                    🔹 Se marcado, indica que esta propriedade não tem unidades individuais separadas. 
+                    Exemplo: uma casa única em vez de um prédio com vários apartamentos.
+                </p>
+            </div>
+
+            <button type="submit" class="btn btn-success w-full">💾 Salvar</button>
+        </form>
+
+        <div class="mt-6 text-center">
+            <a href="{% url 'properties:property_list' %}" class="btn btn-outline btn-success w-full">⬅️ Voltar para a Lista</a>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}Lista de Inquilinos | alugAE{% endblock %}
+
+{% block content %}
+<div class="flex flex-col items-center justify-center min-h-screen px-6 py-8">
+    <div class="w-full max-w-lg bg-white shadow-md rounded-lg p-8">
+        
+        <h2 class="text-2xl font-bold text-green-700 text-center mb-4">👥 Meus Inquilinos</h2>
+
+        {% if tenants %}
+            <ul class="divide-y divide-gray-300">
+                {% for tenant in tenants %}
+                    <li class="py-4">
+                        <p class="text-gray-800"><strong>Nome:</strong> {{ tenant.user.first_name }} {{ tenant.user.last_name }}</p>
+                        <p class="text-gray-600"><strong>Email:</strong> {{ tenant.user.email }}</p>
+                        <p class="text-gray-600"><strong>Telefone:</strong> {{ tenant.user.phone }}</p>
+                        <div class="mt-2">
+                            <a href="{% url 'accounts:update_tenant' tenant_id=tenant.id %}" class="btn btn-outline btn-success">✏️ Editar</a>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="text-gray-600 text-center mt-4">Nenhum inquilino cadastrado ainda.</p>
+        {% endif %}
+
+        <div class="mt-6 text-center">
+            <a href="{% url 'accounts:landlord_panel' %}" class="btn btn-outline btn-success w-full">⬅️ Voltar ao Painel</a>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

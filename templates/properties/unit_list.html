@@ -1,23 +1,36 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Unidades de {{ property.name }}</title>
-</head>
-<body>
-    <h1>Unidades de {{ property.name }}</h1>
-    <ul>
-        {% for unit in units %}
-            <li>
-                <strong>{{ unit.unit_number }}</strong> - {{ unit.status }}
-                <a href="{% url 'unit_edit' unit.id %}">Editar</a> |
-                <a href="{% url 'unit_delete' unit.id %}">Deletar</a>
-            </li>
-        {% endfor %}
-    </ul>
-    <a href="{% url 'unit_add' property.id %}">Adicionar Nova Unidade</a>
-    <br>
-    <a href="{% url 'property_list' %}">Voltar para Propriedades</a>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}Unidades de {{ property.name }} | alugAE{% endblock %}
+
+{% block content %}
+<div class="flex flex-col items-center justify-center min-h-screen px-6 py-8">
+    <div class="w-full max-w-lg bg-white shadow-md rounded-lg p-8">
+        
+        <h2 class="text-2xl font-bold text-green-700 text-center mb-4">🏢 Unidades de {{ property.name }}</h2>
+
+        {% if units %}
+            <ul class="divide-y divide-gray-300">
+                {% for unit in units %}
+                    <li class="py-4">
+                        <p class="text-gray-800"><strong>Unidade:</strong> {{ unit.unit_number }}</p>
+                        <p class="text-gray-600"><strong>Status:</strong> {{ unit.status }}</p>
+                        
+                        <div class="mt-2 flex flex-wrap gap-2">
+                            <a href="{% url 'properties:unit_edit' unit.id %}" class="btn btn-outline btn-warning">✏️ Editar</a>
+                            <a href="{% url 'properties:unit_delete' unit.id %}" class="btn btn-outline btn-error">🗑 Deletar</a>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="text-gray-600 text-center mt-4">Nenhuma unidade cadastrada ainda.</p>
+        {% endif %}
+
+        <div class="mt-6 flex flex-col gap-2">
+            <a href="{% url 'properties:unit_add' property.id %}" class="btn btn-success w-full">➕ Adicionar Unidade</a>
+            <a href="{% url 'properties:property_list' %}" class="btn btn-outline btn-success w-full">⬅️ Voltar para Propriedades</a>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

@@ -1,17 +1,82 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% if unit %}Editar Unidade{% else %}Adicionar Unidade{% endif %}</title>
-</head>
-<body>
-    <h1>{% if unit %}Editar Unidade{% else %}Adicionar Unidade{% endif %}</h1>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">{% if unit %}Salvar Alterações{% else %}Adicionar Unidade{% endif %}</button>
-    </form>
-    <a href="{% url 'unit_list' unit.property.id %}">Voltar</a>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}{% if unit %}Editar Unidade{% else %}Adicionar Unidade{% endif %} | alugAE{% endblock %}
+
+{% block content %}
+<div class="flex flex-col items-center justify-center min-h-screen px-6 py-8">
+    <div class="w-full max-w-lg bg-white shadow-md rounded-lg p-8">
+        
+        <h2 class="text-2xl font-bold text-green-700 text-center mb-4">
+            {% if unit %}✏️ Editar Unidade{% else %}➕ Adicionar Unidade{% endif %}
+        </h2>
+
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+
+            <!-- 🔥 Garante que o property_id sempre esteja presente -->
+            <input type="hidden" name="property" value="{% if unit %}{{ unit.property.id }}{% else %}{{ property.id }}{% endif %}">
+
+            <div class="flex flex-col">
+                <label class="text-gray-700 font-medium mb-1">🏠 Número da Unidade</label>
+                <input type="text" name="unit_number" value="{{ form.unit_number.value|default_if_none:'' }}" 
+                       class="input input-bordered bg-gray-200 text-gray-800 rounded-lg py-3 w-full">
+            </div>
+
+            <div class="flex flex-col">
+                <label class="text-gray-700 font-medium mb-1">📄 Status</label>
+                <select name="status" class="select select-bordered bg-gray-200 text-gray-800 rounded-lg py-3 w-full">
+                    {% for value, label in form.status.field.choices %}
+                        <option value="{{ value }}" {% if form.status.value == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="flex flex-col">
+                <label class="text-gray-700 font-medium mb-1">👤 Inquilino</label>
+                <select name="tenant" class="select select-bordered bg-gray-200 text-gray-800 rounded-lg py-3 w-full">
+                    <option value="" {% if not form.tenant.value %}selected{% endif %}>Sem Inquilino</option>
+                    {% for tenant in form.tenant.field.queryset %}
+                        <option value="{{ tenant.id }}" {% if form.tenant.value == tenant.id %}selected{% endif %}>
+                            {{ tenant.user.first_name }} {{ tenant.user.last_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="flex flex-col">
+                <label class="text-gray-700 font-medium mb-1">💰 Aluguel Mensal (R$)</label>
+                <input type="text" name="monthly_rent" value="{{ form.monthly_rent.value|default_if_none:'' }}" 
+                       class="input input-bordered bg-gray-200 text-gray-800 rounded-lg py-3 w-full">
+            </div>
+
+            <div class="flex flex-col">
+                <label class="text-gray-700 font-medium mb-1">💵 Depósito (R$)</label>
+                <input type="text" name="deposit_amount" value="{{ form.deposit_amount.value|default_if_none:'' }}" 
+                       class="input input-bordered bg-gray-200 text-gray-800 rounded-lg py-3 w-full">
+            </div>
+
+            <div class="flex flex-col">
+                <label class="text-gray-700 font-medium mb-1">📅 Data de Entrada</label>
+                <input type="date" name="move_in_date" value="{{ form.move_in_date.value|default_if_none:'' }}" 
+                       class="input input-bordered bg-gray-200 text-gray-800 rounded-lg py-3 w-full">
+            </div>
+
+            <div class="flex flex-col">
+                <label class="text-gray-700 font-medium mb-1">📅 Data de Saída</label>
+                <input type="date" name="move_out_date" value="{{ form.move_out_date.value|default_if_none:'' }}" 
+                       class="input input-bordered bg-gray-200 text-gray-800 rounded-lg py-3 w-full">
+            </div>
+
+            <button type="submit" class="btn btn-success w-full">
+                {% if unit %}💾 Salvar Alterações{% else %}➕ Adicionar Unidade{% endif %}
+            </button>
+        </form>
+
+        <div class="mt-6 text-center">
+            <!-- 🔥 Agora garante que `property_id` sempre exista -->
+            <a href="{% url 'properties:unit_list' property_id=unit.property.id|default:property.id %}" class="btn btn-outline btn-success w-full">⬅️ Voltar</a>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

@@ -1,20 +1,69 @@
+{% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}alugAE{% endblock %}</title>
+    <title>{% block title %} alugAE {% endblock %}</title>
+
+    <!-- Importando a fonte Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS via arquivos estáticos -->
+    <link href="{% static 'css/output.css' %}" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
 </head>
-<body>
-    <header>
-        <h1>alugAE</h1>
-        <nav>
-            <a href="{% url 'account_login' %}">Login</a>
-            <a href="{% url 'account_signup' %}">Registro</a>
-        </nav>
+<body class="bg-gray-100 text-gray-900 flex flex-col min-h-screen">
+
+    <!-- Navbar -->
+    <header class="bg-white shadow-md p-4 flex justify-between items-center">
+        <!-- Logo - Redireciona para o painel se estiver logado, senão vai para a home -->
+        <a href="{% if user.is_authenticated %}{% url 'accounts:landlord_panel' %}{% else %}{% url 'home' %}{% endif %}" 
+           class="text-lg font-bold text-green-600">
+            🏠 alugAE
+        </a>
+        
+        {% if user.is_authenticated %}
+            <!-- Menu Dropdown -->
+            <div class="relative">
+                <button id="menu-toggle" class="btn btn-success">
+                    ☰ Menu
+                </button>
+                <div id="menu-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white border rounded shadow-lg py-2">
+                    <a href="{% url 'accounts:profile' %}" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">👤 Meu Perfil</a>
+                    <a href="{% url 'properties:property_list' %}" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">🏠 Minhas Propriedades</a>
+                    <a href="{% url 'rent:contract_setup' %}" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">📑 Criar Contrato</a>
+                    <a href="{% url 'upload_receipt' %}" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">💰 Enviar Pagamento</a>
+                    <div class="border-t mt-2"></div>
+                    <a href="{% url 'account_logout' %}" class="block px-4 py-2 text-red-600 hover:bg-gray-100">🚪 Logout</a>
+                </div>
+            </div>
+        {% else %}
+            <a href="{% url 'account_login' %}" class="btn btn-sm btn-success">Entrar</a>
+        {% endif %}
     </header>
-    <main>
+
+    <!-- Conteúdo da Página -->
+    <main class="flex-1 container mx-auto px-4 py-6">
         {% block content %}{% endblock %}
     </main>
+
+    <!-- Rodapé -->
+    <footer class="p-4 bg-gray-200 text-center text-gray-700 text-sm">
+        &copy; 2025 alugAE - Todos os direitos reservados.
+    </footer>
+
+    <!-- Script para abrir/fechar menu -->
+    <script>
+        document.getElementById("menu-toggle").addEventListener("click", function() {
+            document.getElementById("menu-dropdown").classList.toggle("hidden");
+        });
+    </script>
+
 </body>
 </html>
