@@ -2,6 +2,9 @@
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 from django.utils.timezone import now, timedelta
+import random
+import string
+from django.db import models
 
 # Custom User Manager
 class CustomUserManager(BaseUserManager):
@@ -88,42 +91,27 @@ def default_expiration():
     return now() + timedelta(hours=24)
 
 # Adoption code
-def default_expiration():
-    """Helper function to define default expiration."""
-    return now() + timedelta(days=1)  # Default expiration: 1 day
+def generate_adoption_code():
+    """
+    Generates a 5-character adoption code: 3 uppercase letters + 2 digits (e.g., ABC12).
+    """
+    letters = ''.join(random.choices(string.ascii_uppercase, k=3))  # 3 uppercase letters
+    numbers = ''.join(random.choices(string.digits, k=2))  # 2 digits
+    return letters + numbers  # Example: ABC12
 
 class AdoptionCode(models.Model):
-    landlord = models.ForeignKey(
-        "accounts.CustomUser",
+    landlord = models.OneToOneField(
+        Landlord,  # Agora referenciamos diretamente a tabela Landlord
         on_delete=models.CASCADE,
-        related_name="adoption_codes",
-        verbose_name="Landlord"
+        related_name='adoption_code'
     )
-    property = models.ForeignKey(
-        'properties.Property',
-        on_delete=models.CASCADE,
-        related_name='adoption_codes_property',  # Nome único para evitar conflitos
-        null=True,
-        blank=True,
-        verbose_name="Property"
-    )
-    unit = models.ForeignKey(
-        'properties.Unit',
-        on_delete=models.CASCADE,
-        related_name='adoption_codes_unit',  # Nome único para evitar conflitos
-        null=True,
-        blank=True,
-        verbose_name="Unit"
-    )
-    code = models.CharField(max_length=8, unique=True, verbose_name="Adoption Code")
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
-    expires_at = models.DateTimeField(default=default_expiration, verbose_name="Expires At")
-    is_used = models.BooleanField(default=False, verbose_name="Is Used")
+    code = models.CharField(max_length=5, unique=True, default=generate_adoption_code)
 
     def __str__(self):
-        return f"Code: {self.code} for Unit: {self.unit} (Property: {self.property})"
+        return f"Adoption Code: {self.code} for Landlord ID {self.landlord.id}"
 
     class Meta:
         db_table = "adoption_codes"
-        verbose_name = "Adoption Code"
-        verbose_name_plural = "Adoption Codes"
+
+
+

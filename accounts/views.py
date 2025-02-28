@@ -1,8 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import EssentialLandlordForm, OptionalLandlordForm, TenantSignupForm, LandlordUpdateForm, TenantUpdateForm
-from .models import CustomUser, Landlord, Tenant 
+from .models import CustomUser, Landlord, Tenant, AdoptionCode
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import login
+from django.contrib.auth import login,authenticate
 from django.contrib.auth import get_backends
 
 def home(request):
@@ -35,13 +35,16 @@ def user_type_selection(request):
 
 
 # View for the first part of registration (Essential Data)
+
+
 def landlord_signup_step1(request):
     if request.method == "POST":
         form = EssentialLandlordForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            # Create an empty landlord profile linked to the user
-            Landlord.objects.create(user=user)
+            user = form.save()  # Criamos o usuário corretamente
+
+            # Criamos o Landlord associado ao usuário recém-criado
+            landlord = Landlord.objects.create(user=user)
 
             # Obter o backend correto
             backend = get_backends()[0]  # Pega o primeiro backend disponível
@@ -50,13 +53,13 @@ def landlord_signup_step1(request):
             # Loga o usuário automaticamente após o Step 1
             login(request, user, backend=user.backend)
 
-            # Redirect to the second step of the registration process
+            # Redireciona diretamente para o Step 2
             return redirect("accounts:landlord_signup_step2", user_id=user.id) 
+
     else:
         form = EssentialLandlordForm()
 
     return render(request, "accounts/landlord_signup_step1.html", {"form": form})
-
 
 # View for the second part of registration (Optional Data)
 @login_required
@@ -78,18 +81,17 @@ def landlord_signup_step2(request, user_id):
 
     return render(request, "accounts/landlord_signup_step2.html", {"form": form})
 
-
-# View for tenant SignUp form
+#View for tenant signup 
 def tenant_signup(request):
     if request.method == "POST":
         form = TenantSignupForm(request.POST)
         if form.is_valid():
-            form.save()
-            return redirect("account_login")  # Redirect to login after successful signup
+            form.save()  # O formulário já salva o Tenant com o landlord_id correto
+            return redirect("account_login")  
     else:
         form = TenantSignupForm()
-    return render(request, "accounts/tenant_signup.html", {"form": form})
 
+    return render(request, "accounts/tenant_signup.html", {"form": form})
 
 # View for profile update (both landlord and tenant)
 @login_required
@@ -124,24 +126,29 @@ def update_landlord(request):
         form = LandlordUpdateForm(instance=request.user)
     return render(request, "accounts/update_landlord.html", {"form": form})
 
-
 @login_required
-def update_tenant(request):
+def update_tenant(request, tenant_id):
     """
-    Allows a logged-in Tenant to update their profile information.
-    Ensures only Tenants can access this view.
+    Allows a logged-in Tenant to update their own profile,
+    or a Landlord to update their associated Tenants' profiles.
     """
-    # Verify the user is a Tenant
-    if not hasattr(request.user, 'tenant'):
-        return redirect("home")  # Redirect if the user is not a Tenant
+    tenant = get_object_or_404(Tenant, id=tenant_id)
+
+    # Ensure that the logged-in user is either the Tenant or the Landlord who owns the property
+    if request.user != tenant.user and not hasattr(request.user, 'landlord'):
+        return redirect("home")  # Redirect if unauthorized
+
+    if hasattr(request.user, 'landlord') and tenant.landlord != request.user.landlord:
+        return redirect("home")  # Ensure Landlord only edits their own Tenants
 
     if request.method == "POST":
-        form = TenantUpdateForm(request.POST, instance=request.user)
+        form = TenantUpdateForm(request.POST, instance=tenant.user)
         if form.is_valid():
-            form.save(user=request.user)
-            return redirect("accounts:profile")  # Redirect to the profile page after update
+            form.save(user=tenant.user)
+            return redirect("profile")  # Redirect to the profile page after update
     else:
-        form = TenantUpdateForm(instance=request.user)
+        form = TenantUpdateForm(instance=tenant.user)
+    
     return render(request, "accounts/update_tenant.html", {"form": form})
 
 @login_required

@@ -53,6 +53,7 @@ class OptionalLandlordForm(forms.ModelForm):
     marital_status = forms.CharField(max_length=20, required=False)
     profession = forms.CharField(max_length=100, required=False)
     cpf = forms.CharField(max_length=14, required=False)
+    pix_key = forms.CharField(max_length=100, required=False)
 
     class Meta:
         model = CustomUser
@@ -64,12 +65,13 @@ class OptionalLandlordForm(forms.ModelForm):
         landlord = Landlord.objects.get(user=user)
         landlord.marital_status = self.cleaned_data.get("marital_status")
         landlord.profession = self.cleaned_data.get("profession")
+        landlord.pix_key = self.cleaned_data.get("pix_key")
         if commit:
             user.save()
             landlord.save()
         return landlord
 
-# Form for Tenant SignUp
+
 class TenantSignupForm(forms.ModelForm):
     email = forms.EmailField(required=True)
     phone = forms.CharField(max_length=15, required=True)
@@ -79,27 +81,25 @@ class TenantSignupForm(forms.ModelForm):
     cpf = forms.CharField(max_length=14, required=True)
     marital_status = forms.CharField(max_length=20, required=True)
     profession = forms.CharField(max_length=100, required=True)
-    #adoption_code = forms.CharField(max_length=8, required=True)
+    adoption_code = forms.CharField(max_length=8, required=True)  
 
     class Meta:
         model = CustomUser
         fields = ['email', 'phone', 'password', 'first_name', 'last_name', 'cpf']
 
-    # def clean_adoption_code(self):
-    #     code = self.cleaned_data.get('adoption_code')
-    #     try:
-    #         adoption_code = AdoptionCode.objects.get(code=code, is_used=False)
-    #         if adoption_code.expires_at < now():
-    #             raise forms.ValidationError("The adoption code has expired.")
-    #         return adoption_code
-    #     except AdoptionCode.DoesNotExist:
-    #         raise forms.ValidationError("Invalid adoption code.")
+    def clean_adoption_code(self):
+        """ Valida se o código de adoção existe e retorna apenas o ID do Landlord. """
+        code = self.cleaned_data.get('adoption_code')
+        try:
+            landlord_id = AdoptionCode.objects.get(code=code).landlord_id  # Apenas o ID
+            return landlord_id
+        except AdoptionCode.DoesNotExist:
+            raise forms.ValidationError("Código de adoção inválido.")
 
     def save(self, commit=True):
-        # Extract username from the email
+        """ Salva o usuário e cria o Tenant com o landlord correto. """
         username = self.cleaned_data["email"].split("@")[0]
-       
-        # Create the CustomUser instance
+
         user = CustomUser.objects.create_user(
             username=username,
             email=self.cleaned_data["email"],
@@ -111,30 +111,28 @@ class TenantSignupForm(forms.ModelForm):
         user.last_name = self.cleaned_data["last_name"]
         user.cpf = self.cleaned_data["cpf"]
         user.save()
-        
-        # Definir Landlord padrão (ID 1)
-        landlord = Landlord.objects.get(id=1)  # Obtém o Landlord com ID 1
 
-        #adoption_code = self.cleaned_data.get('adoption_code')
-        # Create the Tenant profile
+        # Obtém o ID do Landlord (apenas ID, sem carregar objeto)
+        landlord_id = self.cleaned_data.get('adoption_code')
+
+        # Criar o Tenant com o landlord_id correto
         tenant = Tenant.objects.create(
             user=user,
             marital_status=self.cleaned_data["marital_status"],
             profession=self.cleaned_data["profession"],
-            landlord=landlord  # Associando ao Landlord 1
+            landlord_id=landlord_id  # Agora usamos apenas o ID
         )
 
-        # Mark the adoption code as used
-        # adoption_code = self.cleaned_data.pop('adoption_code')
-        # adoption_code.is_used = True
-        # adoption_code.save()
+        return tenant
+
 
         return user, tenant
 # Form for updating Landlord profile
 class LandlordUpdateForm(forms.ModelForm):
     marital_status = forms.CharField(max_length=20, required=False)  # Optional marital status field
     profession = forms.CharField(max_length=100, required=False)  # Optional profession field
-
+    pix_key = forms.CharField(max_length=100, required=False)
+    
     class Meta:
         model = CustomUser
         fields = ['email', 'phone', 'cpf']  # Fields allowed for update
@@ -151,6 +149,8 @@ class LandlordUpdateForm(forms.ModelForm):
         landlord = Landlord.objects.get(user=user)
         landlord.marital_status = self.cleaned_data.get('marital_status')
         landlord.profession = self.cleaned_data.get('profession')
+        landlord.pix_key = self.cleaned_data.get('pix_key')
+        
         if commit:
             landlord.save()
 

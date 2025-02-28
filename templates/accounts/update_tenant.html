@@ -14,9 +14,21 @@
             <div class="space-y-4">
                 {% for field in form %}
                 <div>
-                    <label class="text-gray-700 font-medium">{{ field.label }}</label>
+                    {% if field.name == "marital_status" %}
+                        <label class="text-gray-700 font-medium">Estado Civil</label>
+                    {% elif field.name == "profession" %}
+                        <label class="text-gray-700 font-medium">Profissão</label>
+                    {% elif field.name == "cpf" %}
+                        <label class="text-gray-700 font-medium">CPF</label>
+                    {% elif field.name == "phone" %}
+                        <label class="text-gray-700 font-medium">Telefone</label>
+                    {% else %}
+                        <label class="text-gray-700 font-medium">{{ field.label }}</label>
+                    {% endif %}
+
                     <input type="{{ field.field.widget.input_type }}" name="{{ field.name }}" value="{{ field.value|default_if_none:'' }}" 
                            class="input input-bordered w-full bg-gray-200 text-gray-800 rounded-lg py-3">
+                    
                     {% if field.errors %}
                         <p class="text-red-500 text-sm">{{ field.errors.0 }}</p>
                     {% endif %}
@@ -28,7 +40,7 @@
         </form>
 
         <div class="mt-6 text-center">
-            <a href="{% url 'accounts:profile' %}" class="btn btn-outline btn-success w-full">Voltar ao Perfil</a>
+            <a href="{% url 'accounts:list_tenants' %}" class="btn btn-outline btn-success w-full">Voltar à Lista de Inquilinos</a>
         </div>
 
     </div>

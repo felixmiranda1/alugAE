@@ -30,6 +30,14 @@
                 <label class="text-gray-700 font-medium mt-4">CPF</label>
                 <input type="text" name="cpf" required class="input input-bordered w-full bg-gray-200 text-gray-800 rounded-lg py-3">
 
+                <!-- Adoption Code -->
+                <div class="flex justify-between items-center mt-4">
+                    <label class="text-gray-700 font-medium">Código de Adoção</label>
+                    <span id="adoptionMessage" class="text-sm text-gray-500"></span>
+                </div>
+                <input type="text" id="adoption_code" name="adoption_code" required 
+                       class="input input-bordered w-full text-gray-800 rounded-lg py-3">
+
                 <button type="button" class="btn btn-success w-full mt-6 next-step">Próximo</button>
             </div>
 
@@ -74,7 +82,7 @@
     </div>
 </div>
 
-<!-- Script para fazer a navegação entre as etapas sem recarregar -->
+<!-- Script para fazer a navegação entre as etapas e preencher o Adoption Code -->
 <script>
     const steps = document.querySelectorAll('.step');
     const progressBar = document.getElementById('progress-bar');
@@ -106,5 +114,27 @@
     });
 
     showStep(currentStep);
+
+    // Preencher o código de adoção automaticamente se vier na URL
+    function setAdoptionCode() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const adoptionCode = urlParams.get('adoption_code');  // Obtém o código da URL
+        const inputField = document.getElementById('adoption_code');
+        const messageField = document.getElementById('adoptionMessage');
+
+        if (adoptionCode) {
+            inputField.value = adoptionCode;  // Preenche automaticamente
+            inputField.setAttribute('readonly', 'true');  // Torna o campo imutável
+            inputField.classList.add('bg-green-200');  // Muda a cor para destacar
+            messageField.innerText = "Este código lhe associa automaticamente ao proprietário";
+            messageField.classList.add('text-green-600');  // Torna a mensagem verde
+        } else {
+            messageField.innerText = "Peça ao proprietário do imóvel";
+            messageField.classList.add('text-red-500');  // Torna a mensagem vermelha
+            inputField.classList.add('bg-gray-200'); 
+        }
+    }
+
+    window.onload = setAdoptionCode;
 </script>
 {% endblock %}

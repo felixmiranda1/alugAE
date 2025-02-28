@@ -21,11 +21,45 @@
             <a href="{% url 'properties:property_list' %}" class="btn btn-success w-full">🏠 Minhas Propriedades</a>
             <a href="{% url 'properties:property_add' %}" class="btn btn-success w-full">➕ Adicionar Propriedade</a>
         </div>
-
+        
         <!-- Gerenciamento de Inquilinos -->
         <h3 class="text-lg font-semibold text-gray-800 mt-6">👥 Inquilinos</h3>
-        <div class="grid grid-cols-1 gap-4 mt-4">
+        <div class="grid grid-cols-2 gap-4 mt-4">
             <a href="{% url 'accounts:list_tenants' %}" class="btn btn-success w-full">📋 Listar Inquilinos</a>
+            
+            <!-- Botão Adicionar Inquilino com Dropdown -->
+            <div class="relative">
+                <button id="addTenantBtn" class="btn btn-success w-full flex items-center justify-between">
+                    ➕ Adicionar Inquilino ⬇️
+                </button>
+                <div id="dropdownMenu" class="hidden absolute bg-white shadow-md rounded-lg p-4 mt-2 w-full z-10">
+                
+                    <p class="text-sm font-semibold text-gray-800 mt-2 text-center">📌 Seu Código:</p>
+                    <div class="flex flex-col items-center bg-gray-100 px-3 py-2 rounded-md w-full">
+                        <button onclick="copyToClipboard('adoptionCode')" class="text-green-600 font-bold flex items-center space-x-2">
+                            <span id="adoptionCode">{{ request.user.adoption_code.code }}</span> 📋
+                        </button>
+                    </div>
+                    
+                    <p class="text-sm font-semibold text-gray-800 mt-2 text-center">🔗 Link de Registro:</p>
+                    <div class="flex flex-col items-center bg-gray-100 px-3 py-2 rounded-md w-full">
+                        <button onclick="copyToClipboard('registrationLink')" class="text-green-600 font-bold flex items-center space-x-2">
+                            <span id="registrationLink" class="hidden">
+                                {{ request.build_absolute_uri }}/accounts/tenant/signup/?adoption_code={{ request.user.adoption_code.code }}
+                            </span>
+                            <span>Link</span> 📋
+                        </button>
+                    </div>
+                    
+                        
+
+                        <a id="whatsappShare" href="#" class="btn btn-primary w-full mt-3 flex items-center justify-center">
+                            📲 Enviar pelo WhatsApp
+                        </a>
+            
+                    
+                </div>
+            </div>
         </div>
 
         <!-- Gestão de Contratos -->
@@ -50,4 +84,30 @@
 
     </div>
 </div>
+
+<script>
+    // Mostra/esconde o dropdown
+    document.getElementById("addTenantBtn").addEventListener("click", function () {
+        let menu = document.getElementById("dropdownMenu");
+        menu.classList.toggle("hidden");
+    });
+
+    // Copia para a área de transferência
+    function copyToClipboard(elementId) {
+        let text = document.getElementById(elementId).innerText;
+        navigator.clipboard.writeText(text).then(() => {
+            alert("Copiado!");
+        });
+    }
+
+    // Configura o link do WhatsApp
+    document.getElementById("whatsappShare").addEventListener("click", function () {
+        let code = "{{ request.user.adoption_code.code }}"
+        let link = document.getElementById("registrationLink").innerText;
+        let message = `Olá! Use este código para se cadastrar no alugAE: ${code} ou clique no link direto: ${link}`;
+        let whatsappURL = `https://wa.me/?text=${encodeURIComponent(message)}`;
+        window.open(whatsappURL, "_blank");
+    });
+</script>
+
 {% endblock %}

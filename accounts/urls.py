@@ -33,4 +33,5 @@ urlpatterns = [
     #URLs for tenant list 
     path("tenants/list/", list_tenants, name="list_tenants"),
 
+
 ]
