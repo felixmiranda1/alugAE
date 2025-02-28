@@ -4322,6 +4322,10 @@ details.collapse summary::-webkit-details-marker {
   margin-top: 3rem;
 }
 
+.ml-2 {
+  margin-left: 0.5rem;
+}
+
 .block {
   display: block;
 }

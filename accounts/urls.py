@@ -1,5 +1,5 @@
 from django.urls import path, include
-from .views import user_type_selection, landlord_signup_step1, landlord_signup_step2, tenant_signup, update_landlord, update_tenant,profile,update_profile,landlord_panel, list_tenants
+from .views import user_type_selection, landlord_signup_step1, landlord_signup_step2, tenant_signup, update_landlord, update_tenant,profile,update_profile,landlord_panel,list_tenants,tenant_signup_success
 from django.contrib.auth.views import LoginView
 
 app_name = "accounts" 
@@ -20,6 +20,7 @@ urlpatterns = [
 
     # Placeholder for Tenant signup flow (to be implemented later)
     path("tenant/signup/", tenant_signup, name="tenant_signup"),
+    path("tenant/signup/success/", tenant_signup_success, name="tenant_signup_success"),
 
     # URLs for LandLord and Tenant update flow 
     path("update-profile/", update_profile, name="update_profile"),

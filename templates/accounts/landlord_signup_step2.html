@@ -5,21 +5,55 @@
 {% block content %}
 <div class="flex flex-col items-center justify-center min-h-screen px-6 py-8">
     <div class="w-full max-w-md bg-white shadow-md rounded-lg p-8">
-        
-        <h2 class="text-2xl font-bold text-green-700 text-center">Dados complementares</h2>
+
+        <h2 class="text-2xl font-bold text-green-700 text-center">Dados Complementares</h2>
         <p class="text-gray-600 text-center mt-3">
             Seu cadastro foi concluído! Agora, preencha os dados abaixo para desbloquear todas as funcionalidades da plataforma.
         </p>
 
-        <form method="post" class="mt-8 w-full flex flex-col gap-4">
+        <form method="post" class="mt-8 w-full flex flex-col gap-4" onsubmit="return validarFormulario()">
             {% csrf_token %}
 
             <!-- Renderiza os campos do formulário com estilos personalizados -->
             <div class="flex flex-col gap-3">
-                {% for field in form %}
-                    <label class="text-gray-700 font-medium">{{ field.label }}</label>
-                    <input type="{{ field.field.widget.input_type }}" name="{{ field.name }}" 
-                           class="input input-bordered w-full bg-gray-200 text-gray-800 rounded-lg py-3">
+                {% for campo in form %}
+                    {% if campo.name == "cpf" %}
+                        <label class="text-gray-700 font-medium flex items-center">
+                            CPF
+                            <span id="erroCpf" class="text-red-500 text-sm ml-2 hidden">✖ CPF inválido.</span>
+                        </label>
+                        <input type="text" id="cpf" name="cpf" required 
+                               class="input input-bordered w-full bg-gray-200 text-gray-800 rounded-lg py-3"
+                               maxlength="14" placeholder="XXX.XXX.XXX-XX">
+                    
+                    {% elif campo.name == "marital_status" %}
+                        <label class="text-gray-700 font-medium">Estado Civil</label>
+                        <select id="estado_civil" name="marital_status" required class="input input-bordered w-full bg-gray-200 text-gray-800 rounded-lg py-3">
+                            <option value="">Selecione seu estado civil</option>
+                            <option value="Solteiro(a)">Solteiro(a)</option>
+                            <option value="Casado(a)">Casado(a)</option>
+                            <option value="Divorciado(a)">Divorciado(a)</option>
+                            <option value="Viúvo(a)">Viúvo(a)</option>
+                            <option value="Separado(a)">Separado(a)</option>
+                            <option value="União Estável">União Estável</option>
+                        </select>
+                        <span id="erroEstadoCivil" class="text-red-500 text-sm hidden">✖ Selecione uma opção.</span>
+                    
+                    {% elif campo.name == "profession" %}
+                    <label class="text-gray-700 font-medium">Profissão</label>
+                    <input type="text" id="profissao" name="profession" required 
+                            class="input input-bordered w-full bg-gray-200 text-gray-800 rounded-lg py-3">
+                
+                    {% elif campo.name == "pix_key" %}
+                        <label class="text-gray-700 font-medium">Chave PIX</label>
+                        <input type="text" id="chave_pix" name="pix_key" required 
+                               class="input input-bordered w-full bg-gray-200 text-gray-800 rounded-lg py-3">
+                    
+                    {% else %}
+                        <label class="text-gray-700 font-medium">{{ campo.label }}</label>
+                        <input type="{{ campo.field.widget.input_type }}" name="{{ campo.name }}" 
+                               class="input input-bordered w-full bg-gray-200 text-gray-800 rounded-lg py-3">
+                    {% endif %}
                 {% endfor %}
             </div>
 
@@ -36,8 +70,53 @@
 
         <!-- Aviso logo abaixo do botão "Pular" -->
         <div class="bg-yellow-100 text-yellow-800 p-4 mt-4 rounded-lg text-sm">
-            ⚠️ Importante: Sem estes dados, você não poderá gerar contratos e ativar aluguéis. Ainda é possível preenche-los posteriormente.
+            ⚠️ Importante: Sem estes dados, você não poderá gerar contratos e ativar aluguéis. Ainda é possível preenchê-los posteriormente.
         </div>
     </div>
 </div>
+
+<!-- Script para validações -->
+<script>
+    function validarCPF() {
+        let campoCpf = document.getElementById("cpf");
+        let erroCpf = document.getElementById("erroCpf");
+        let valorCpf = campoCpf.value.replace(/\D/g, ""); // Remove caracteres não numéricos
+
+        if (valorCpf.length > 11) valorCpf = valorCpf.slice(0, 11);
+        campoCpf.value = valorCpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
+
+        if (valorCpf.length !== 11) {
+            erroCpf.classList.remove("hidden");
+            return false;
+        } else {
+            erroCpf.classList.add("hidden");
+            return true;
+        }
+    }
+
+    function validarEstadoCivil() {
+        let estadoCivil = document.getElementById("estado_civil").value;
+        let erroEstadoCivil = document.getElementById("erroEstadoCivil");
+
+        if (estadoCivil === "") {
+            erroEstadoCivil.classList.remove("hidden");
+            return false;
+        } else {
+            erroEstadoCivil.classList.add("hidden");
+            return true;
+        }
+    }
+
+    function validarFormulario() {
+        let valido = true;
+        
+        if (!validarCPF()) valido = false;
+        if (!validarEstadoCivil()) valido = false;
+
+        return valido;
+    }
+
+    document.getElementById("cpf").addEventListener("input", validarCPF);
+    document.getElementById("estado_civil").addEventListener("blur", validarEstadoCivil);
+</script>
 {% endblock %}

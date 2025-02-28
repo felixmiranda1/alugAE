@@ -14,7 +14,7 @@
         <h2 class="text-2xl font-bold text-green-700 text-center">Cadastro de Inquilino</h2>
         <p class="text-gray-600 text-center mt-3">Preencha os campos abaixo para criar sua conta.</p>
 
-        <form method="post" enctype="multipart/form-data" class="mt-8 w-full">
+        <form method="post" enctype="multipart/form-data" class="mt-8 w-full" onsubmit="return validateForm()">
             {% csrf_token %}
 
             <!-- Etapa 1 - Dados Pessoais -->
@@ -22,21 +22,23 @@
                 <h3 class="text-lg font-semibold text-gray-800 mb-4">📋 Dados Pessoais</h3>
 
                 <label class="text-gray-700 font-medium">Primeiro Nome</label>
-                <input type="text" name="first_name" required class="input input-bordered w-full bg-gray-200 text-gray-800 rounded-lg py-3">
+                <input type="text" id="first_name" name="first_name" required class="input input-bordered w-full bg-gray-200 text-gray-800 rounded-lg py-3">
 
                 <label class="text-gray-700 font-medium mt-4">Sobrenome(s) <span class="text-sm text-gray-500">(Insira todos)</span></label>
-                <input type="text" name="last_name" required class="input input-bordered w-full bg-gray-200 text-gray-800 rounded-lg py-3">
+                <input type="text" id="last_name" name="last_name" required class="input input-bordered w-full bg-gray-200 text-gray-800 rounded-lg py-3">
 
                 <label class="text-gray-700 font-medium mt-4">CPF</label>
-                <input type="text" name="cpf" required class="input input-bordered w-full bg-gray-200 text-gray-800 rounded-lg py-3">
+                <input type="text" id="cpf" name="cpf" required class="input input-bordered w-full bg-gray-200 text-gray-800 rounded-lg py-3" maxlength="14" placeholder="XXX.XXX.XXX-XX">
+                <span id="cpfError" class="text-red-500 text-sm hidden">CPF inválido.</span>
 
-                <!-- Adoption Code -->
+                <!-- Código de Adoção -->
                 <div class="flex justify-between items-center mt-4">
                     <label class="text-gray-700 font-medium">Código de Adoção</label>
                     <span id="adoptionMessage" class="text-sm text-gray-500"></span>
                 </div>
                 <input type="text" id="adoption_code" name="adoption_code" required 
                        class="input input-bordered w-full text-gray-800 rounded-lg py-3">
+                <span id="adoptionCodeError" class="text-red-500 text-sm hidden">Código inválido. Verifique com o proprietário.</span>
 
                 <button type="button" class="btn btn-success w-full mt-6 next-step">Próximo</button>
             </div>
@@ -45,8 +47,18 @@
             <div id="step-2" class="step hidden">
                 <h3 class="text-lg font-semibold text-gray-800 mb-4">📝 Dados para Contratos</h3>
 
+            <!-- Estado Civil -->
                 <label class="text-gray-700 font-medium">Estado Civil</label>
-                <input type="text" name="marital_status" required class="input input-bordered w-full bg-gray-200 text-gray-800 rounded-lg py-3">
+                <select id="marital_status" name="marital_status" required class="input input-bordered w-full bg-gray-200 text-gray-800 rounded-lg py-3">
+                    <option value="">Selecione seu estado civil</option>
+                    <option value="Solteiro(a)">Solteiro(a)</option>
+                    <option value="Casado(a)">Casado(a)</option>
+                    <option value="Divorciado(a)">Divorciado(a)</option>
+                    <option value="Viúvo(a)">Viúvo(a)</option>
+                    <option value="Separado(a)">Separado(a)</option>
+                    <option value="União Estável">União Estável</option>
+                </select>
+                <span id="maritalStatusError" class="text-red-500 text-sm hidden">Por favor, selecione uma opção.</span>
 
                 <label class="text-gray-700 font-medium mt-4">Profissão</label>
                 <input type="text" name="profession" required class="input input-bordered w-full bg-gray-200 text-gray-800 rounded-lg py-3">
@@ -61,28 +73,38 @@
             <div id="step-3" class="step hidden">
                 <h3 class="text-lg font-semibold text-gray-800 mb-4">🔑 Dados Cadastrais para Login</h3>
 
-                <label class="text-gray-700 font-medium">Email</label>
-                <input type="email" name="email" required class="input input-bordered w-full bg-gray-200 text-gray-800 rounded-lg py-3">
+                <label class="text-gray-700 font-medium flex justify-between items-center">
+                    Email <span id="emailError" class="text-red-500 text-sm hidden">Email inválido.</span>
+                </label>
+                <input type="email" id="email" name="email" required class="input input-bordered w-full bg-gray-200 text-gray-800 rounded-lg py-3" onblur="validateEmail()">
 
-                <label class="text-gray-700 font-medium mt-4">Celular <span class="text-sm text-gray-500">(Precisa ter WhatsApp)</span></label>
-                <input type="text" name="phone" required class="input input-bordered w-full bg-gray-200 text-gray-800 rounded-lg py-3">
+                <label class="text-gray-700 font-medium mt-4 flex justify-between items-center">
+                    Celular <span id="phoneError" class="text-red-500 text-sm hidden">Formato inválido.</span>
+                </label>
+                <input type="text" id="phone" name="phone" required class="input input-bordered w-full bg-gray-200 text-gray-800 rounded-lg py-3" maxlength="15" placeholder="(XX) XXXXX-XXXX" onblur="validatePhone()">
 
-                <label class="text-gray-700 font-medium mt-4">Senha</label>
-                <input type="password" name="password" required class="input input-bordered w-full bg-gray-200 text-gray-800 rounded-lg py-3">
+                <label class="text-gray-700 font-medium mt-4 flex justify-between items-center">
+                    Senha <span id="passwordError" class="text-red-500 text-sm hidden">Mínimo 8 caracteres.</span>
+                </label>
+                <input type="password" id="password" name="password" required class="input input-bordered w-full bg-gray-200 text-gray-800 rounded-lg py-3" onblur="validatePasswords()">
 
-                <label class="text-gray-700 font-medium mt-4">Confirme sua Senha</label>
-                <input type="password" name="password_confirm" required class="input input-bordered w-full bg-gray-200 text-gray-800 rounded-lg py-3">
+                <label class="text-gray-700 font-medium mt-4 flex justify-between items-center">
+                    Confirme sua Senha <span id="confirmPasswordError" class="text-red-500 text-sm hidden">As senhas não coincidem.</span>
+                </label>
+                <input type="password" id="password_confirm" name="password_confirm" required class="input input-bordered w-full bg-gray-200 text-gray-800 rounded-lg py-3" onblur="validatePasswords()">
 
-                <div class="flex justify-between mt-6">
+                <div class="flex justify-between mt-6 items-center">
+                    <div id="formError" class="text-red-500 text-sm hidden">
+                        ❌ Por favor, corrija os erros.
+                    </div>
                     <button type="button" class="btn btn-outline btn-success prev-step">Voltar</button>
                     <button type="submit" class="btn btn-success">Criar Conta</button>
                 </div>
-            </div>
+                
         </form>
     </div>
 </div>
 
-<!-- Script para fazer a navegação entre as etapas e preencher o Adoption Code -->
 <script>
     const steps = document.querySelectorAll('.step');
     const progressBar = document.getElementById('progress-bar');
@@ -115,26 +137,201 @@
 
     showStep(currentStep);
 
-    // Preencher o código de adoção automaticamente se vier na URL
     function setAdoptionCode() {
         const urlParams = new URLSearchParams(window.location.search);
-        const adoptionCode = urlParams.get('adoption_code');  // Obtém o código da URL
+        const adoptionCode = urlParams.get('adoption_code');
         const inputField = document.getElementById('adoption_code');
         const messageField = document.getElementById('adoptionMessage');
 
         if (adoptionCode) {
-            inputField.value = adoptionCode;  // Preenche automaticamente
-            inputField.setAttribute('readonly', 'true');  // Torna o campo imutável
-            inputField.classList.add('bg-green-200');  // Muda a cor para destacar
+            inputField.value = adoptionCode;
+            inputField.setAttribute('readonly', 'true');
+            inputField.classList.add('bg-gray-300');
             messageField.innerText = "Este código lhe associa automaticamente ao proprietário";
-            messageField.classList.add('text-green-600');  // Torna a mensagem verde
+            messageField.classList.add('text-green-600');
+
+            // Validar formato do código
+            validateAdoptionCode();
         } else {
             messageField.innerText = "Peça ao proprietário do imóvel";
-            messageField.classList.add('text-red-500');  // Torna a mensagem vermelha
+            messageField.classList.add('text-red-500');
             inputField.classList.add('bg-gray-200'); 
         }
     }
 
+    function validateCPF() {
+        let cpfInput = document.getElementById("cpf");
+        let cpfError = document.getElementById("cpfError");
+        let cpfValue = cpfInput.value.replace(/\D/g, ""); 
+
+        if (cpfValue.length > 11) cpfValue = cpfValue.slice(0, 11);
+        cpfInput.value = cpfValue.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
+
+        if (cpfValue.length !== 11) {
+            cpfError.classList.remove("hidden");
+            return false;
+        } else {
+            cpfError.classList.add("hidden");
+            return true;
+        }
+    }
+
+    function validateAdoptionCode() {
+        let adoptionCode = document.getElementById("adoption_code").value;
+        let adoptionCodeError = document.getElementById("adoptionCodeError");
+        let pattern = /^[A-Z]{3}\d{2}$/; 
+
+        if (!pattern.test(adoptionCode)) {
+            adoptionCodeError.classList.remove("hidden");
+            return false;
+        } else {
+            adoptionCodeError.classList.add("hidden");
+            return true;
+        }
+    }
+
+    function validateMaritalStatus() {
+    let maritalStatus = document.getElementById("marital_status").value;
+    let maritalStatusError = document.getElementById("maritalStatusError");
+
+    if (maritalStatus === "") {
+        maritalStatusError.classList.remove("hidden");
+        return false;
+    } else {
+        maritalStatusError.classList.add("hidden");
+        return true;
+    }
+}
+
+    function validateEmail() {
+        let email = document.getElementById("email").value;
+        let emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        let emailError = document.getElementById("emailError");
+
+        if (!emailPattern.test(email)) {
+            emailError.classList.remove("hidden");
+            return false;
+        } else {
+            emailError.classList.add("hidden");
+            return true;
+        }
+    }
+
+    function validatePhone() {
+        let phone = document.getElementById("phone").value;
+        let phonePattern = /^\(\d{2}\) \d{5}-\d{4}$/;
+        let phoneError = document.getElementById("phoneError");
+
+        if (!phonePattern.test(phone)) {
+            phoneError.classList.remove("hidden");
+            return false;
+        } else {
+            phoneError.classList.add("hidden");
+            return true;
+        }
+    }
+
+    function validatePasswords() {
+        let password = document.getElementById("password").value;
+        let confirmPassword = document.getElementById("password_confirm").value;
+        let passwordError = document.getElementById("passwordError");
+        let confirmPasswordError = document.getElementById("confirmPasswordError");
+
+        let isValid = true;
+
+        if (password.length < 8) {
+            passwordError.classList.remove("hidden");
+            isValid = false;
+        } else {
+            passwordError.classList.add("hidden");
+        }
+
+        if (password !== confirmPassword) {
+            confirmPasswordError.classList.remove("hidden");
+            isValid = false;
+        } else {
+            confirmPasswordError.classList.add("hidden");
+        }
+
+        return isValid;
+    }
+
+    function validateForm() {
+        let isValid = true;
+        let firstErrorField = null;
+
+        if (!validateCPF()) {
+            isValid = false;
+            firstErrorField = firstErrorField || document.getElementById("cpf");
+        }
+        if (!validateAdoptionCode()) {
+            isValid = false;
+            firstErrorField = firstErrorField || document.getElementById("adoption_code");
+        }
+        if (!validateMaritalStatus()) {
+            isValid = false;
+            firstErrorField = firstErrorField || document.getElementById("marital_status");
+        }
+        if (!validateEmail()) {
+            isValid = false;
+            firstErrorField = firstErrorField || document.getElementById("email");
+        }
+        if (!validatePhone()) {
+            isValid = false;
+            firstErrorField = firstErrorField || document.getElementById("phone");
+        }
+        if (!validatePasswords()) {
+            isValid = false;
+            firstErrorField = firstErrorField || document.getElementById("password");
+        }
+
+        if (!isValid) {
+            firstErrorField.focus(); // Foca no primeiro campo com erro
+            formError.classList.remove("hidden"); // Exibe o aviso abaixo do botão
+            return false;
+        } else {
+            formError.classList.add("hidden"); // Oculta o aviso se tudo estiver certo
+        }
+        
+        return true; // Permite o envio do formulário   
+    }
+
+    // Exibe mensagens de erro ao tentar submeter o formulário
+    function showErrorsOnSubmit() {
+        validateCPF();
+        validateAdoptionCode();
+        validateMaritalStatus();
+        validateEmail();
+        validatePhone();
+        validatePasswords();
+    }
+
+    document.querySelector("form").addEventListener("submit", function (event) {
+        showErrorsOnSubmit(); // Garante que todas as mensagens de erro sejam mostradas
+        if (!validateForm()) {
+            event.preventDefault(); // Impede o envio se houver erro
+        }
+    });
+
+    // Máscara para CPF
+    document.getElementById("cpf").addEventListener("input", validateCPF);
+
+    // Máscara para Celular (Formato: (XX) XXXXX-XXXX)
+    document.getElementById("phone").addEventListener("input", function(event) {
+        let value = event.target.value.replace(/\D/g, ""); 
+        if (value.length > 11) value = value.slice(0, 11);
+        event.target.value = value.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3");
+    });
+
+    // Validações em tempo real
+    document.getElementById("email").addEventListener("blur", validateEmail);
+    document.getElementById("phone").addEventListener("blur", validatePhone);
+    document.getElementById("password").addEventListener("blur", validatePasswords);
+    document.getElementById("password_confirm").addEventListener("blur", validatePasswords);
+
     window.onload = setAdoptionCode;
 </script>
+
+
+
 {% endblock %}

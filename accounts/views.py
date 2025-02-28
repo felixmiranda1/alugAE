@@ -39,6 +39,7 @@ def user_type_selection(request):
 
 def landlord_signup_step1(request):
     if request.method == "POST":
+        print(request.POST)
         form = EssentialLandlordForm(request.POST)
         if form.is_valid():
             user = form.save()  # Criamos o usuário corretamente
@@ -55,7 +56,8 @@ def landlord_signup_step1(request):
 
             # Redireciona diretamente para o Step 2
             return redirect("accounts:landlord_signup_step2", user_id=user.id) 
-
+        else: 
+            return render(request, "accounts/landlord_signup_step1.html", {"form": form})  # Envia os erros para o HTML
     else:
         form = EssentialLandlordForm()
 
@@ -75,7 +77,7 @@ def landlord_signup_step2(request, user_id):
         form = OptionalLandlordForm(request.POST)
         if form.is_valid():
             form.save(user=user)
-            return redirect("account_login")  # Redirect to login page
+            return redirect("accounts:landlord_panel")  # Redirect to login page
     else:
         form = OptionalLandlordForm()
 
@@ -87,11 +89,17 @@ def tenant_signup(request):
         form = TenantSignupForm(request.POST)
         if form.is_valid():
             form.save()  # O formulário já salva o Tenant com o landlord_id correto
-            return redirect("account_login")  
+            return redirect("accounts:tenant_signup_success") 
     else:
         form = TenantSignupForm()
 
     return render(request, "accounts/tenant_signup.html", {"form": form})
+
+
+#View for tenat signup success 
+def tenant_signup_success(request):
+    return render(request, "accounts/tenant_signup_success.html")
+
 
 # View for profile update (both landlord and tenant)
 @login_required

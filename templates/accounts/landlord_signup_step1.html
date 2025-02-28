@@ -16,7 +16,7 @@
             Faça seu cadastro em poucos segundos.
         </p>
 
-        <form method="post">
+        <form method="post" onsubmit="return validateForm()">
             {% csrf_token %}
 
             <!-- Etapa 1 - Informações Pessoais -->
@@ -24,10 +24,10 @@
                 <h3 class="text-lg font-semibold text-gray-800 mb-4">📋 Informações Pessoais</h3>
 
                 <label class="text-gray-700 font-medium">Primeiro Nome</label>
-                <input type="text" name="first_name" required class="input input-bordered w-full bg-gray-200 text-gray-800 rounded-lg py-3">
+                <input type="text" id="first_name" name="first_name" required class="input input-bordered w-full bg-gray-200 text-gray-800 rounded-lg py-3">
 
                 <label class="text-gray-700 font-medium mt-4">Sobrenome(s)</label>
-                <input type="text" name="last_name" required class="input input-bordered w-full bg-gray-200 text-gray-800 rounded-lg py-3">
+                <input type="text" id="last_name" name="last_name" required class="input input-bordered w-full bg-gray-200 text-gray-800 rounded-lg py-3">
 
                 <button type="button" class="btn btn-success w-full mt-6 next-step">Próximo</button>
             </div>
@@ -36,28 +36,37 @@
             <div id="step-2" class="step hidden">
                 <h3 class="text-lg font-semibold text-gray-800 mb-4">🔑 Dados de Acesso</h3>
 
-                <label class="text-gray-700 font-medium">Email</label>
-                <input type="email" name="email" required class="input input-bordered w-full bg-gray-200 text-gray-800 rounded-lg py-3">
+                <label class="text-gray-700 font-medium flex items-center">Email
+                    <span id="emailError" class="text-red-500 text-sm ml-2 hidden">✖ Email inválido.</span>
+                </label>
+                <input type="email" id="email" name="email" required class="input input-bordered w-full bg-gray-200 text-gray-800 rounded-lg py-3">
 
-                <label class="text-gray-700 font-medium mt-4">Telefone</label>
-                <input type="text" name="phone" required class="input input-bordered w-full bg-gray-200 text-gray-800 rounded-lg py-3">
+                <label class="text-gray-700 font-medium flex items-center mt-4">Telefone
+                    <span id="phoneError" class="text-red-500 text-sm ml-2 hidden">✖ Formato inválido. Ex: (99) 99999-9999</span>
+                </label>
+                <input type="text" id="phone" name="phone" required class="input input-bordered w-full bg-gray-200 text-gray-800 rounded-lg py-3" maxlength="15" placeholder="(XX) XXXXX-XXXX">
 
-                <label class="text-gray-700 font-medium mt-4">Senha</label>
-                <input type="password" name="password" required class="input input-bordered w-full bg-gray-200 text-gray-800 rounded-lg py-3">
+                <label class="text-gray-700 font-medium flex items-center mt-4">Senha
+                    <span id="passwordError" class="text-red-500 text-sm ml-2 hidden">✖ Mínimo 8 caracteres.</span>
+                </label>
+                <input type="password" id="password" name="password" required class="input input-bordered w-full bg-gray-200 text-gray-800 rounded-lg py-3">
 
-                <label class="text-gray-700 font-medium mt-4">Confirme sua Senha</label>
-                <input type="password" name="password_confirm" required class="input input-bordered w-full bg-gray-200 text-gray-800 rounded-lg py-3">
+                <label class="text-gray-700 font-medium flex items-center mt-4">Confirme sua Senha
+                    <span id="confirmPasswordError" class="text-red-500 text-sm ml-2 hidden">✖ As senhas não coincidem.</span>
+                </label>
+                <input type="password" id="password_confirm" name="password_confirm" required class="input input-bordered w-full bg-gray-200 text-gray-800 rounded-lg py-3">
 
-                <div class="flex justify-between mt-6">
+                <div class="flex justify-between items-center mt-6">
                     <button type="button" class="btn btn-outline btn-success prev-step">Voltar</button>
-                    <button type="submit" class="btn btn-success">Finalizar Cadastro</button>
+                    <div id="formError" class="text-red-500 text-sm hidden">❌ Por favor, corrija os erros.</div>
+                    <button type="submit" class="btn btn-success" id="submitButton">Finalizar Cadastro</button>
                 </div>
             </div>
         </form>
     </div>
 </div>
 
-<!-- Script para fazer a navegação entre as etapas sem recarregar -->
+<!-- Script para validações -->
 <script>
     const steps = document.querySelectorAll('.step');
     const progressBar = document.getElementById('progress-bar');
@@ -89,5 +98,96 @@
     });
 
     showStep(currentStep);
+
+    function validateEmail() {
+        let email = document.getElementById("email").value;
+        let emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        let emailError = document.getElementById("emailError");
+
+        if (!emailPattern.test(email)) {
+            emailError.classList.remove("hidden");
+            return false;
+        } else {
+            emailError.classList.add("hidden");
+            return true;
+        }
+    }
+
+    function validatePhone() {
+        let phone = document.getElementById("phone").value;
+        let phonePattern = /^\(\d{2}\) \d{5}-\d{4}$/;
+        let phoneError = document.getElementById("phoneError");
+
+        if (!phonePattern.test(phone)) {
+            phoneError.classList.remove("hidden");
+            return false;
+        } else {
+            phoneError.classList.add("hidden");
+            return true;
+        }
+    }
+
+    function validatePasswords() {
+        let password = document.getElementById("password").value;
+        let confirmPassword = document.getElementById("password_confirm").value;
+        let passwordError = document.getElementById("passwordError");
+        let confirmPasswordError = document.getElementById("confirmPasswordError");
+
+        let isValid = true;
+
+        if (password.length < 8) {
+            passwordError.classList.remove("hidden");
+            isValid = false;
+        } else {
+            passwordError.classList.add("hidden");
+        }
+
+        if (password !== confirmPassword) {
+            confirmPasswordError.classList.remove("hidden");
+            isValid = false;
+        } else {
+            confirmPasswordError.classList.add("hidden");
+        }
+
+        return isValid;
+    }
+
+    function validateForm() {
+        let isValid = true;
+
+        if (!validateEmail()) isValid = false;
+        if (!validatePhone()) isValid = false;
+        if (!validatePasswords()) isValid = false;
+
+        if (!isValid) {
+            document.getElementById("formError").classList.remove("hidden");
+        } else {
+            document.getElementById("formError").classList.add("hidden");
+        }
+
+        return isValid;
+    }
+
+    // Aplicar máscara ao telefone conforme o usuário digita
+    document.getElementById("phone").addEventListener("input", function(event) {
+        let value = event.target.value.replace(/\D/g, ""); // Remove não numéricos
+
+        if (value.length > 11) value = value.slice(0, 11); // Limita a 11 dígitos
+
+        // Formata corretamente para (XX) XXXXX-XXXX
+        if (value.length >= 11) {
+            event.target.value = value.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3");
+        } else if (value.length >= 6) {
+            event.target.value = value.replace(/(\d{2})(\d{4,5})/, "($1) $2");
+        } else if (value.length >= 2) {
+            event.target.value = value.replace(/(\d{2})/, "($1) ");
+        }
+    });
+
+    // Verifica apenas quando o usuário sair do campo (para evitar frustrações)
+    document.getElementById("email").addEventListener("blur", validateEmail);
+    document.getElementById("phone").addEventListener("blur", validatePhone);
+    document.getElementById("password").addEventListener("blur", validatePasswords);
+    document.getElementById("password_confirm").addEventListener("blur", validatePasswords);
 </script>
 {% endblock %}
