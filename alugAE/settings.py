@@ -107,19 +107,8 @@ WSGI_APPLICATION = 'alugAE.wsgi.application'
 # }
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'railway',  # Nome do banco de dados
-        'USER': 'postgres',  # Usuário do banco de dados
-        'PASSWORD': 'cwPEnbhRBqwEACGwXQPYQGRHzzHANxvh',  # Senha do usuário
-        'HOST': 'trolley.proxy.rlwy.net',  # Host do banco de dados
-        'PORT': '17985',  # Porta do PostgreSQL
-        'OPTIONS': {
-            'options': '-c search_path=alugae,public'  # Configura o schema padrão
-        },
-    }
+    'default': env.db('DATABASE_URL', default='postgresql://postgres:cwPEnbhRBqwEACGwXQPYQGRHzzHANxvh@trolley.proxy.rlwy.net:17985/railway'),
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
