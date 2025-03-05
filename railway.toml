@@ -1,0 +1,6 @@
+[build]
+builder = "NIXPACKS"
+buildCommand = "pip install -r requirements.txt"
+
+[start]
+startCommand = "gunicorn alugAE.wsgi:application --bind 0.0.0.0:$PORT"
