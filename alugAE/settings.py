@@ -107,7 +107,7 @@ WSGI_APPLICATION = 'alugAE.wsgi.application'
 # }
 
 DATABASES = {
-    "default": env.db("DATABASE_URL", default="postgres://felixmiranda:Porto@localhost:5432/alugae")
+    'default': env.db('DATABASE_URL', default='postgresql://postgres:cwPEnbhRBqwEACGwXQPYQGRHzzHANxvh@trolley.proxy.rlwy.net:17985/railway')
 }
 
 # Password validation
