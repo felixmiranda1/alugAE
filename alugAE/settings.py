@@ -82,6 +82,7 @@ CSP_IMG_SRC = ["'self'", "https://snippet.maze.co"]
 CSP_CONNECT_SRC = ["'self'", "https://api.maze.co", "https://prompts.maze.co"]
 CSP_FRAME_SRC = ["'self'", "https://t.maze.co"]
 
+
 ROOT_URLCONF = 'alugAE.urls'
 
 TEMPLATES = [
