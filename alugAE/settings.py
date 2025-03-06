@@ -114,7 +114,15 @@ MIGRATION_MODULES = {
     'accounts': None,
     'properties': None,
     'payments': None,
-    'rent': None,  
+    'rent': None,
+    'account': None,  # Ignora migrações do app 'account'
+    'admin': None,  # Ignora migrações do app 'admin'
+    'auth': None,  # Ignora migrações do app 'auth'
+    'contenttypes': None,  # Ignora migrações do app 'contenttypes'
+    'sessions': None,  # Ignora migrações do app 'sessions'
+    'sites': None,  # Ignora migrações do app 'sites'
+    'socialaccount': None,  # Ignora migrações do app 'socialaccount'
+
     }
 
 
