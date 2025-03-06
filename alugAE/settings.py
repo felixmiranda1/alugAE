@@ -111,9 +111,11 @@ DATABASES = {
 }
 
 MIGRATION_MODULES = {
-    'accounts': None,  # Substitua 'app_name' pelo nome do seu aplicativo
-    # Você pode adicionar mais aplicativos aqui se necessário
-}
+    'accounts': None,
+    'properties': None,
+    'payments': None,
+    'rent': None,  
+    }
 
 
 # Password validation
