@@ -65,6 +65,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware', 
 ]
 
 ROOT_URLCONF = 'alugAE.urls'
@@ -192,16 +193,14 @@ USE_I18N = True
 
 USE_TZ = True
 
+STATIC_URL = '/static/'
 
-import environ
+# Configuração de arquivos estáticos com o WhiteNoise
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# Inicializa o objeto de ambiente
-env = environ.Env()
-environ.Env.read_env()  # Lê as variáveis do arquivo .env
+# Diretório onde os arquivos estáticos serão coletados em produção
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# Defina as configurações de arquivos estáticos
-STATIC_URL = env('STATIC_URL', default='/static/')
-STATIC_ROOT = env('STATIC_ROOT', default='staticfiles')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
