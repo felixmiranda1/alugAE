@@ -193,17 +193,15 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/4.2/howto/static-files/
+import environ
 
-STATIC_URL = 'static/'
+# Inicializa o objeto de ambiente
+env = environ.Env()
+environ.Env.read_env()  # Lê as variáveis do arquivo .env
 
-# 🛠️ Corrigindo para garantir que Django encontre os arquivos estáticos
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "static"),  # Adiciona a pasta static como diretório válido
-]
-
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")  # Onde os arquivos serão coletados
+# Defina as configurações de arquivos estáticos
+STATIC_URL = env('STATIC_URL', default='/static/')
+STATIC_ROOT = env('STATIC_ROOT', default='staticfiles')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
