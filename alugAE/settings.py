@@ -107,8 +107,14 @@ WSGI_APPLICATION = 'alugAE.wsgi.application'
 # }
 
 DATABASES = {
-    'default': env.db('DATABASE_URL', default='postgresql://postgres:cwPEnbhRBqwEACGwXQPYQGRHzzHANxvh@trolley.proxy.rlwy.net:17985/railway'),
+    'default': env.db('DATABASE_URL', default='postgresql://postgres:cwPEnbhRBqwEACGwXQPYQGRHzzHANxvh@trolley.proxy.rlwy.net:17985/railway?schema=alugae')
 }
+
+MIGRATION_MODULES = {
+    'accounts': None,  # Substitua 'app_name' pelo nome do seu aplicativo
+    # Você pode adicionar mais aplicativos aqui se necessário
+}
+
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
