@@ -31,7 +31,7 @@ SECRET_KEY = 'django-insecure-z#c2$8dvb3h8@sty%mwo+!!j650e44k_t)bg-x4m7$b(86zq9n
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['0.0.0.0', 'localhost', '.railway.app']
+ALLOWED_HOSTS = ['0.0.0.0', 'localhost', '.railway.app', '127.0.0.1']
 
 # Application definition
 
@@ -96,7 +96,7 @@ WSGI_APPLICATION = 'alugAE.wsgi.application'
 #         'ENGINE': 'django.db.backends.postgresql',
 #         'NAME': 'alugae',  # Nome do banco de dados
 #         'USER': 'felixmiranda',  # Usuário do banco de dados
-#         'PASSWORD': 'Porto',  # Senha do usuário
+#         'PASSWORD': 'go',  # Senha do usuário
 #         'HOST': 'localhost',  # Endereço do banco de dados
 #         'PORT': '5432',  # Porta do PostgreSQL
 #         'OPTIONS': {
