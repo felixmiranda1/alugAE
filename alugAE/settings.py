@@ -70,17 +70,19 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware', 
-    "csp.middleware.CSPMiddleware", 
+    #"csp.middleware.CSPMiddleware", 
 ]
 
-# Permitir o Maze como fonte confiável
-CSP_DEFAULT_SRC = ["'self'", "https://*.maze.co"]
-CSP_SCRIPT_SRC = ["'self'", "https://snippet.maze.co", "'unsafe-inline'"]
-CSP_FONT_SRC = ["'self'", "https://snippet.maze.co", "https://fonts.gstatic.com"]
-CSP_STYLE_SRC = ["'self'", "https://snippet.maze.co", "https://fonts.googleapis.com", "'unsafe-inline'"]
-CSP_IMG_SRC = ["'self'", "https://snippet.maze.co"]
-CSP_CONNECT_SRC = ["'self'", "https://api.maze.co", "https://prompts.maze.co"]
-CSP_FRAME_SRC = ["'self'", "https://t.maze.co"]
+CSP_DEFAULT_SRC = ["*"]
+CSP_SCRIPT_SRC = ["*"]
+CSP_STYLE_SRC = ["*"]
+CSP_FONT_SRC = ["*"]
+CSP_IMG_SRC = ["*"]
+CSP_CONNECT_SRC = ["*"]
+CSP_FRAME_SRC = ["*"]
+CSP_MEDIA_SRC = ["*"]
+CSP_OBJECT_SRC = ["*"]
+CSP_BASE_URI = ["*"]
 
 
 ROOT_URLCONF = 'alugAE.urls'
