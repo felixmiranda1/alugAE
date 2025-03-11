@@ -1,0 +1,10 @@
+# Ignorar ambiente virtual
+venv/
+
+# Ignorar variáveis de ambiente
+.env
+
+# Ignorar arquivos de cache e compilados do Python
+__pycache__/
+*.py[cod]
+*$py.class
