@@ -27,6 +27,7 @@ from django.utils.timezone import now
 from .models import Template
 from properties.models import Unit
 from accounts.models import Landlord, Tenant
+from django.urls import reverse
 
 
 
@@ -46,40 +47,12 @@ def contract_setup_view(request):
     units = Unit.objects.filter(property__in=properties)
     tenants = Tenant.objects.filter(landlord=landlord)
 
-    # # Serialize landlord, units, and tenants into JSON
-    # landlord_json = json.dumps({
-    #     "landlord": {
-    #         "id": landlord.id,
-    #         "user_id": landlord.user.id,
-    #         "email": landlord.user.email,
-    #         "marital_status": landlord.marital_status,
-    #         "profession": landlord.profession,
-    #     },
-    #     "units": [
-    #         {
-    #             "id": unit.id,
-    #             "property_id": unit.property.id,
-    #             "unit_number": unit.unit_number,
-    #             "status": unit.status, 
-    #             "tenant_id": unit.tenant.id if unit.tenant else None,
-    #         } for unit in units
-    #     ],
-    #     "tenants": [
-    #         {
-    #             "id": tenant.id,
-    #             "user_id": tenant.user.id,
-    #             "email": tenant.user.email,
-    #             "marital_status": tenant.marital_status,
-    #             "profession": tenant.profession,
-    #         } for tenant in tenants
-    #     ]
-    # }, cls=DjangoJSONEncoder)
-
     if request.method == "POST":
         # Get selected unit, tenant, and template from the form
         unit_id = request.POST.get("unit")
         tenant_id = request.POST.get("tenant")
         template_id = request.POST.get("template")
+        payment_due_date = request.POST.get("payment_due_date")
 
         # Fetch objects
         unit = units.get(id=unit_id)  # Fetch unit from the filtered units
@@ -87,7 +60,7 @@ def contract_setup_view(request):
         template = get_object_or_404(Template, id=template_id)
 
         # Redirect to the contract generation view
-        return redirect("rent:review_contract_data", unit_id=unit.id, tenant_id=tenant.id, template_id=template.id)
+        return redirect(f"{reverse('rent:review_contract_data', kwargs={'unit_id': unit.id, 'tenant_id': tenant.id, 'template_id': template.id})}?payment_due_date={payment_due_date}")
 
     templates = Template.objects.all()
 
@@ -95,7 +68,7 @@ def contract_setup_view(request):
         "units": units,
         "tenants": tenants,
         "templates": templates,
-        # "landlord_json": landlord_json,
+        'day_range':range(1,31),
     }
     return render(request, "rent/contract_setup.html", context)
 
@@ -169,12 +142,13 @@ def generate_contract_view(request, unit_id, tenant_id, template_id):
         # Buscar os objetos específicos com base nos IDs
         unit = units.get(id=unit_id)
         tenant = tenants.get(id=tenant_id)
+        payment_due_date = request.POST.get("payment_due_date", 1)
         template = get_object_or_404(Template, id=template_id)
 
         # Criar o contrato, se necessário
         contract, created = Contract.objects.get_or_create(
-            landlord=landlord.user,
-            tenant=tenant.user,
+            landlord=landlord,
+            tenant=tenant,
             unit=unit,
             template=template,
             defaults={
@@ -182,7 +156,7 @@ def generate_contract_view(request, unit_id, tenant_id, template_id):
                 "rent_value": unit.monthly_rent,
                 "start_date": now(),
                 "end_date": now() + timedelta(days=365),
-                "payment_due_date": 1,
+                "payment_due_date": payment_due_date,
             },
         )
 
@@ -199,7 +173,7 @@ def generate_contract_view(request, unit_id, tenant_id, template_id):
             "DATA_DE_INICIO": f"<b>{contract.start_date.strftime('%d/%m/%Y')}</b>",
             "DATA_DE_TERMINO": f"<b>{contract.end_date.strftime('%d/%m/%Y')}</b>",
             "PRAZO_LOCACAO": "<b>12 meses</b>",
-            "DIA_VENCIMENTO": "<b>5</b>",
+            "DIA_VENCIMENTO": f"<b>{payment_due_date}</b>",
             }
         contract_content = generate_contract(template.content, context)
 
@@ -219,6 +193,7 @@ def review_contract_data(request, unit_id, tenant_id, template_id):
     """
     Allows the Landlord to review and edit all data before generating the contract.
     """
+    payment_due_date = request.GET.get("payment_due_date", 1)
     try:
         landlord = Landlord.objects.get(user=request.user)
     except Landlord.DoesNotExist:
@@ -277,6 +252,7 @@ def review_contract_data(request, unit_id, tenant_id, template_id):
         "tenant_form": tenant_form,
         "property_form": property_form,
         "unit_form": unit_form,
+        "payment_due_date": payment_due_date,
     }
 
     return render(request, "rent/review_contract_data.html", context)

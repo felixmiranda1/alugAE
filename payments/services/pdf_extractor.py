@@ -5,6 +5,9 @@ import cv2
 from PIL import Image
 import numpy as np
 
+# Moved import to the top to avoid circular dependency issues
+import pdf2image
+
 # Set the Tesseract path and TESSDATA_PREFIX
 os.environ['TESSDATA_PREFIX'] = '/opt/homebrew/share/tessdata'
 pytesseract.pytesseract.tesseract_cmd = "/opt/homebrew/bin/tesseract"
@@ -60,10 +63,12 @@ class PDFReceiptExtractor:
         :return: Path to the generated image file.
         """
         try:
-            import pdf2image
-
             images = pdf2image.convert_from_path(pdf_path, first_page=1, last_page=1, dpi=300)
-            image_path = pdf_path.replace(".pdf", ".jpeg")  # Save as JPEG
+
+            if not images:
+                raise ValueError("Nenhuma imagem foi gerada a partir do PDF.")
+
+            image_path = os.path.splitext(pdf_path)[0] + ".jpeg"
             images[0].save(image_path, "JPEG")
 
             print(f"📸 PDF converted to image: {image_path}")
@@ -71,4 +76,4 @@ class PDFReceiptExtractor:
 
         except Exception as e:
             print(f"❌ Error converting PDF to image: {e}")
-            return None
+            raise RuntimeError(f"Erro convertendo PDF para imagem: {e}")

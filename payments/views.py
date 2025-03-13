@@ -1,4 +1,5 @@
 import os
+import uuid
 from django.shortcuts import render
 from django.http import JsonResponse
 from rest_framework.views import APIView
@@ -23,7 +24,8 @@ class UploadReceiptView(APIView):
             print("❌ Nenhum arquivo foi enviado!")
             return Response({"error": "No file uploaded"}, status=status.HTTP_400_BAD_REQUEST)
 
-        temp_file_path = f"/tmp/{file.name}"
+        file_ext = os.path.splitext(file.name)[1].lower()
+        temp_file_path = f"/tmp/{uuid.uuid4()}{file_ext}"
         with open(temp_file_path, "wb+") as destination:
             for chunk in file.chunks():
                 destination.write(chunk)
@@ -38,12 +40,18 @@ class UploadReceiptView(APIView):
             # 📊 Estruturar os dados extraídos
             structured_data = ReceiptDataStructurer.structure_data(extracted_text)
             print("📊 Dados estruturados extraídos:", structured_data)
+            print(f"❗ Tipo de structured_data: {type(structured_data)}")
+            print(f"❗ Tamanho de structured_data: {len(structured_data)}")
+
+            if not structured_data:
+                print("❌ Structured data is empty! Não foi possível extrair informações do comprovante.")
+                return Response({"error": "Structured data is empty"}, status=status.HTTP_400_BAD_REQUEST)
 
             # 💾 TESTE: Print antes de chamar o `PaymentProcessor`
             print("💾 Chamando PaymentProcessor...")
 
             # 💾 Processar e salvar o pagamento no banco
-            payment = PaymentProcessor.process_and_store_payment(temp_file_path, structured_data)
+            payment = PaymentProcessor.process_and_store_payment(structured_data)
             print("✅ Pagamento processado com sucesso!")
 
             return Response(
@@ -52,13 +60,16 @@ class UploadReceiptView(APIView):
                     "payment_id": payment.id,
                     "transaction_id": payment.transaction_id,
                     "amount": payment.amount,
-                    "status": payment.payment_status
+                    "status": payment.payment_status,
+                    "structured_data": structured_data,
                 },
                 status=status.HTTP_201_CREATED
             )
 
         except Exception as e:
+            import traceback
             print(f"❌ Erro inesperado: {e}")
+            traceback.print_exc()
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         finally:
@@ -78,7 +89,8 @@ def upload_receipt_form(request):
         receipt_file = request.FILES["receipt"]
 
         # Salvar temporariamente o arquivo
-        file_path = f"/tmp/{receipt_file.name}"
+        file_ext = os.path.splitext(receipt_file.name)[1].lower()
+        file_path = f"/tmp/{uuid.uuid4()}{file_ext}"
         with open(file_path, "wb+") as destination:
             for chunk in receipt_file.chunks():
                 destination.write(chunk)
@@ -86,9 +98,19 @@ def upload_receipt_form(request):
         try:
             # 🔍 Extração do texto
             extracted_text = PixReceiptExtractor.process_receipt(file_path)
+            print("📝 Texto extraído no upload_receipt_form:", extracted_text)
 
             # 📊 Estruturar os dados extraídos
             structured_data = ReceiptDataStructurer.structure_data(extracted_text)
+            print("📊 Dados estruturados no upload_receipt_form:", structured_data)
+            print(f"❗ Tipo de structured_data: {type(structured_data)}")
+            print(f"❗ Tamanho de structured_data: {len(structured_data)}")
+            if not structured_data or 'error' in structured_data:
+                print("❌ Structured data is invalid or empty.")
+            else:
+                print("💾 Chamando PaymentProcessor no formulário...")
+                payment = PaymentProcessor.process_and_store_payment(structured_data)
+                print(f"✅ Pagamento criado no formulário! ID: {payment.id}")
 
             # 🔄 Retornar JSON com os dados e o texto extraído
             return JsonResponse(

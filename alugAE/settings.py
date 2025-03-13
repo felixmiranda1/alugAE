@@ -106,23 +106,23 @@ WSGI_APPLICATION = 'alugAE.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'alugae',  # Nome do banco de dados
-#         'USER': 'felixmiranda',  # Usuário do banco de dados
-#         'PASSWORD': 'go',  # Senha do usuário
-#         'HOST': 'localhost',  # Endereço do banco de dados
-#         'PORT': '5432',  # Porta do PostgreSQL
-#         'OPTIONS': {
-#             'options': '-c search_path=alugae'  # Configura o schema padrão
-#         },
-#     }
-# }
-
 DATABASES = {
-    'default': env.db('DATABASE_URL', default='postgresql://postgres:cwPEnbhRBqwEACGwXQPYQGRHzzHANxvh@trolley.proxy.rlwy.net:17985/railway?schema=alugae')
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'alugae',  # Nome do banco de dados
+        'USER': 'felixmiranda',  # Usuário do banco de dados
+        'PASSWORD': 'go',  # Senha do usuário
+        'HOST': 'localhost',  # Endereço do banco de dados
+        'PORT': '5432',  # Porta do PostgreSQL
+        'OPTIONS': {
+            'options': '-c search_path=alugae'  # Configura o schema padrão
+        },
+    }
 }
+
+# DATABASES = {
+#     'default': env.db('DATABASE_URL', default='postgresql://postgres:cwPEnbhRBqwEACGwXQPYQGRHzzHANxvh@trolley.proxy.rlwy.net:17985/railway?schema=alugae')
+# }
 
 MIGRATION_MODULES = {
     'accounts': None,
@@ -223,13 +223,28 @@ USE_I18N = True
 
 USE_TZ = True
 
-STATIC_URL = '/static/'
+# STATIC_URL = '/static/'
 
-# Configuração de arquivos estáticos com o WhiteNoise
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# # Configuração de arquivos estáticos com o WhiteNoise
+# STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# Diretório onde os arquivos estáticos serão coletados em produção
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+# # Diretório onde os arquivos estáticos serão coletados em produção
+# STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+STATIC_URL = 'static/'
+
+# 🛠️ Corrigindo para garantir que Django encontre os arquivos estáticos
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static"),  # Adiciona a pasta static como diretório válido
+]
+
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")  # Onde os arquivos serão coletados
+
+# Default primary key field type
+# https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
 
 
 # Default primary key field type

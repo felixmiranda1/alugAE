@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from properties.models import Unit
+from accounts.models import Landlord, Tenant
 
 class Template(models.Model):
     name = models.CharField(max_length=100)  # Template name
@@ -26,12 +27,12 @@ class Contract(models.Model):
     ]
 
     landlord = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        Landlord,
         related_name="contracts_as_landlord",
         on_delete=models.CASCADE
     )  # The landlord associated with the contract
     tenant = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        Tenant,
         related_name="contracts_as_tenant",
         on_delete=models.CASCADE
     )  # The tenant associated with the contract

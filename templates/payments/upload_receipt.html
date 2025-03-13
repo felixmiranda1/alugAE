@@ -10,11 +10,7 @@
         <p class="text-gray-600 text-center mb-6">Faça o upload do seu comprovante de pagamento para validação.</p>
 
         <!-- Formulário de Upload -->
-        <form id="upload-form" 
-              hx-post="/api/payments/upload/"
-              hx-encoding="multipart/form-data"
-              enctype="multipart/form-data"
-              class="space-y-4">
+        <form method="POST" action="/upload-receipt/" enctype="multipart/form-data" class="space-y-4">
             {% csrf_token %}
 
             <!-- Input de Arquivo -->
