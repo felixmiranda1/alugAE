@@ -56,7 +56,8 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
-    'rest_framework', 
+    'rest_framework',
+    'django_celery_beat', 
 ]
 
 MIDDLEWARE = [
@@ -194,6 +195,22 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')  # Diretório raiz para arquivos
 # Subdiretório para templates de contratos
 CONTRACTS_TEMPLATES_DIR = os.path.join(MEDIA_ROOT, 'contracts_templates/')
 
+#TWILIO variables
+TWILIO_ACCOUNT_SID = env('TWILIO_ACCOUNT_SID')
+TWILIO_AUTH_TOKEN = env('TWILIO_AUTH_TOKEN')
+TWILIO_WHATSAPP_NUMBER = env('TWILIO_WHATSAPP_NUMBER')
+
+TWILIO_TEMPLATE_PAYMENT_REMINDER_3DAYS = env('TWILIO_TEMPLATE_PAYMENT_REMINDER_3DAYS', default='')
+TWILIO_TEMPLATE_PAYMENT_REMINDER_DUEDATE = env('TWILIO_TEMPLATE_PAYMENT_REMINDER_DUEDATE', default='')
+TWILIO_TEMPLATE_PAYMENT_REMINDER_1DAY = env('TWILIO_TEMPLATE_PAYMENT_REMINDER_1DAY', default='')
+TWILIO_TEMPLATE_PROOF_RECEIVED = env('TWILIO_TEMPLATE_PROOF_RECEIVED', default='')
+TWILIO_TEMPLATE_APPROVED = env('TWILIO_TEMPLATE_APPROVED', default='')
+TWILIO_TEMPLATE_REJECTED = env('TWILIO_TEMPLATE_REJECTED', default='')
+
+#Celery
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
