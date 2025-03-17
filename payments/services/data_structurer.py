@@ -1,5 +1,6 @@
 import re
 from datetime import datetime
+import unicodedata
 
 class ReceiptDataStructurer:
     """
@@ -29,6 +30,16 @@ class ReceiptDataStructurer:
         return None
 
     @staticmethod
+    def normalize_text(text):
+        """
+        Normalizes text by removing accents and unwanted characters.
+        """
+        nfkd_form = unicodedata.normalize('NFKD', text)
+        only_ascii = nfkd_form.encode('ASCII', 'ignore').decode('utf-8')
+        cleaned = re.sub(r'[^a-zA-Z0-9]', '', only_ascii)
+        return cleaned.strip()
+
+    @staticmethod
     def structure_data(extracted_text):
         """
         Processes raw extracted text and structures the payment data.
@@ -40,6 +51,7 @@ class ReceiptDataStructurer:
             return {"error": "No text extracted from receipt"}
 
         data = {}
+        lines = extracted_text.splitlines()
 
         # 🔹 Extract `amount`
         amount_match = re.search(r'R\$\s?([\d\.]+,\d{2})', extracted_text)
@@ -75,15 +87,18 @@ class ReceiptDataStructurer:
             print("❌ Chave PIX do recebedor não encontrada!")
 
         # 🔹 Extract `transaction_id` (ID da transação)
-        transaction_match = re.search(
-            r'ID da transa[cç][aã]o\s*[\n:]?\s*([A-Z0-9]{32,})',
-            extracted_text,
-            re.IGNORECASE
-        )
-        if transaction_match:
-            data["transaction_id"] = transaction_match.group(1).strip()
-            print(f"🆔 ID da transação extraído: {data['transaction_id']}")
-        else:
+        data["transaction_id"] = None
+        for idx, line in enumerate(lines):
+            if "id da transacao" in line.lower() or "id da transação" in line.lower():
+                if idx + 1 < len(lines):
+                    raw_transaction_id = lines[idx + 1]
+                    cleaned_transaction_id = ReceiptDataStructurer.normalize_text(raw_transaction_id)
+                    if cleaned_transaction_id:
+                        data["transaction_id"] = cleaned_transaction_id
+                        print(f"🆔 ID da transação extraído: {data['transaction_id']}")
+                break
+
+        if not data["transaction_id"]:
             print("❌ ID da transação não encontrado!")
 
         # 🔹 Extract `payment_date`

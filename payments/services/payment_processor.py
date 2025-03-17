@@ -22,9 +22,11 @@ class PaymentProcessor:
     """
 
     @staticmethod
-    def process_and_store_payment(extracted_data):
+    def process_and_store_payment(extracted_data, payment_id=None, token=None, extracted_text=None):
         """
-        Processes and saves a payment, linking it to the correct Tenant, Landlord, and Contract.
+        Processes and updates an existing payment based on the extracted data.
+        If payment_id and token are provided, updates the corresponding payment.
+        Otherwise, searches for a pending payment for the tenant and contract.
         """
         print("🔍 Processando pagamento...")
         print(f"📄 Dados extraídos recebidos: {extracted_data}")
@@ -82,37 +84,32 @@ class PaymentProcessor:
             print(f"✅ Contrato encontrado: {contract}")
 
             # 🔹 Criar o registro do pagamento no banco de dados
-            print("💾 Criando pagamento no banco de dados...")
-            payment_status = "pending"
+            # Determine which payment to update
+            if payment_id and token:
+                payment = Payment.objects.get(id=payment_id, upload_token=token)
+            else:
+                payment = Payment.objects.filter(
+                    tenant=tenant,
+                    contract=contract,
+                    status='pending'
+                ).first()
 
-            # Example: if validation rules are met, we can mark it as paid (simple logic placeholder)
-            if extracted_data.get("validation_passed", False):
-                payment_status = "paid"
+            if not payment:
+                raise ValueError("No pending payment found for this tenant and contract")
+            transaction_id = extracted_data.get('transaction_id')
+            if not transaction_id:
+                raise ValueError("Transaction ID not found in extracted data")
+            
+            # Update the payment with the extracted data
+            payment.payer_name = extracted_data.get('payer_name', '')
+            payment.receiver_name = extracted_data.get('receiver_name', '')
+            payment.transaction_id = transaction_id
+            payment.payment_date = parser.parse(extracted_data.get('payment_date')) if extracted_data.get('payment_date') else None
+            payment.extracted_text = extracted_text or ''
+            payment.status = 'proof_received'
+            payment.save()
 
-            print("🚀 Dados para criação do pagamento:")
-            print(f"   Tenant ID: {tenant.id}")
-            print(f"   Landlord ID: {landlord.id}")
-            print(f"   Unit ID: {unit.id}")
-            print(f"   Contract ID: {contract.id}")
-            print(f"   Amount: {extracted_data['amount']}")
-            print(f"   Transaction ID: {extracted_data.get('transaction_id', 'UNKNOWN')}")
-            print(f"   Payment date: {extracted_data.get('payment_date')}")
-
-            payment = Payment.objects.create(
-                tenant=tenant,
-                landlord=landlord,
-                unit=unit,
-                contract=contract,
-                amount=float(extracted_data["amount"]),
-                transaction_id=extracted_data.get("transaction_id", "UNKNOWN"),
-                payer_name=extracted_data["payer_name"],
-                receiver_name=extracted_data["receiver_name"],
-                receiver_pix_key=extracted_data.get("receiver_pix_key", "UNKNOWN"),
-                payment_date=parser.parse(extracted_data["payment_date"]),
-                payment_status=payment_status,
-            )
-
-            print(f"✅ Pagamento salvo com sucesso! ID: {payment.id}")
+            print(f"✅ Payment updated successfully! ID: {payment.id}")
             return payment
 
         except Tenant.DoesNotExist:

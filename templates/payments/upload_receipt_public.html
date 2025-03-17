@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Upload de Comprovante PIX | alugAE{% endblock %}
+
+{% block content %}
+<div class="flex flex-col items-center justify-center min-h-screen px-6 py-8">
+    <div class="w-full max-w-lg bg-white shadow-md rounded-lg p-8">
+
+        <h2 class="text-2xl font-bold text-green-700 text-center mb-4">📤 Enviar Comprovante PIX</h2>
+        <p class="text-gray-600 text-center mb-6">Faça o upload do seu comprovante de pagamento para validação.</p>
+
+        <!-- Informações do Pagamento -->
+        <div class="grid grid-cols-1 gap-4 mb-6">
+            <div class="bg-gray-100 p-4 rounded-lg shadow">
+                <p class="text-gray-600 text-sm mb-1">🏠 Proprietário</p>
+                <p class="text-lg font-semibold text-gray-800">{{ landlord_name }}</p>
+            </div>
+            <div class="bg-gray-100 p-4 rounded-lg shadow">
+                <p class="text-gray-600 text-sm mb-1">💵 Valor</p>
+                <p class="text-lg font-semibold text-gray-800">R$ {{ amount_due }}</p>
+            </div>
+            <div class="bg-gray-100 p-4 rounded-lg shadow">
+                <p class="text-gray-600 text-sm mb-1">📅 Vencimento</p>
+                <p class="text-lg font-semibold text-gray-800">{{ due_date }}</p>
+            </div>
+        </div>
+
+        <!-- Formulário de Upload -->
+        <form method="POST" enctype="multipart/form-data" class="space-y-4">
+            {% csrf_token %}
+
+            <!-- Input de Arquivo -->
+            <div class="flex flex-col">
+                <label class="text-gray-700 font-medium mb-1">📎 Selecione o Arquivo</label>
+                <input type="file" name="receipt" required 
+                       class="file-input file-input-bordered bg-gray-200 text-gray-800 rounded-lg py-3 w-full">
+            </div>
+
+            <!-- Botão de Envio -->
+            <button type="submit" class="btn btn-success w-full">📤 Enviar Comprovante</button>
+        </form>
+
+        <!-- Mensagem Pós-Envio -->
+        <div class="mt-6 text-center">
+            <p class="text-xs text-gray-500">Após o envio, seu comprovante será analisado. Você será notificado assim que a análise for concluída.</p>
+        </div>
+
+        <!-- Rodapé -->
+        <div class="mt-6 text-center text-xs text-gray-400">
+            alugAE © 2025 - Plataforma de Gestão de Aluguéis
+        </div>
+
+    </div>
+</div>
+{% endblock %}

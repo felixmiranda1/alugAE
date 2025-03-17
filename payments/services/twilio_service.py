@@ -5,6 +5,18 @@ import json
 
 logger = logging.getLogger(__name__)
 
+def format_phone_number(raw_phone):
+    """
+    Formats a phone number to E.164 international format.
+    Assumes Brazilian numbers if no country code is present.
+    """
+    phone = raw_phone.replace('(', '').replace(')', '').replace(' ', '').replace('-', '')
+
+    if not phone.startswith('+'):
+        phone = f'+55{phone}'
+
+    return phone
+
 def send_template_whatsapp_message(to_number, content_sid, variables_dict):
     """
     Sends a WhatsApp template message using Twilio API.
@@ -21,6 +33,8 @@ def send_template_whatsapp_message(to_number, content_sid, variables_dict):
     auth_token = settings.TWILIO_AUTH_TOKEN
     whatsapp_from = settings.TWILIO_WHATSAPP_NUMBER
 
+    formatted_number = format_phone_number(to_number)
+
     client = Client(account_sid, auth_token)
 
     try:
@@ -28,12 +42,12 @@ def send_template_whatsapp_message(to_number, content_sid, variables_dict):
             from_=whatsapp_from,
             content_sid=content_sid,
             content_variables=json.dumps(variables_dict),
-            to=f'whatsapp:{to_number}'
+            to=f'whatsapp:{formatted_number}'
         )
 
-        logger.info(f"Template message sent to {to_number}. SID: {message.sid}")
+        logger.info(f"Template message sent to {formatted_number}. SID: {message.sid}")
         return message.sid
 
     except Exception as e:
-        logger.error(f"Failed to send template message to {to_number}: {e}")
+        logger.error(f"Failed to send template message to {formatted_number}: {e}")
         return None

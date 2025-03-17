@@ -1,24 +1,49 @@
 from celery import shared_task
 from django.utils import timezone
 from payments.services.twilio_service import send_template_whatsapp_message
+from accounts.models import Tenant
+from rent.models import Contract
+from django.conf import settings
 import logging
+from django.utils.crypto import get_random_string 
+from payments.utils import generate_upload_link
+from payments.models import Payment
 
 logger = logging.getLogger(__name__)
 
 @shared_task
-def send_rent_payment_reminder_task(tenant_id, content_sid, variables_dict):
+def send_rent_payment_reminder_task(tenant_id, content_sid):
     """
     Celery task to send a rent payment reminder to a tenant via WhatsApp.
 
     Args:
         tenant_id (int): ID of the tenant in the database.
         content_sid (str): Template SID for the WhatsApp message.
-        variables_dict (dict): Variables for the template message.
     """
-    from accounts.models import Tenant  # Import aqui para evitar circular import
     try:
         tenant = Tenant.objects.get(id=tenant_id)
         phone_number = tenant.user.phone
+
+        contract = Contract.objects.filter(tenant=tenant, status='active').first()
+
+        if not contract:
+            logger.warning(f"Nenhum contrato ativo encontrado para o tenant {tenant_id}")
+            return
+
+        payment = Payment.objects.filter(contract=contract, status='pending').latest('payment_due_date')
+
+        if not payment:
+            logger.warning(f"Nenhum payment encontrado para o tenant {tenant_id}")
+            return
+
+        link_upload = generate_upload_link(payment)
+
+        variables_dict = {
+            "1": tenant.user.first_name,
+            "2": str(contract.rent_value),
+            "3": payment.payment_due_date.strftime('%d/%m/%Y'),
+            "4": link_upload
+        }
 
         sid = send_template_whatsapp_message(
             to_number=phone_number,
@@ -34,20 +59,18 @@ def send_rent_payment_reminder_task(tenant_id, content_sid, variables_dict):
     except Tenant.DoesNotExist:
         logger.error(f"Tenant with ID {tenant_id} does not exist.")
 
+    except Payment.DoesNotExist:
+        logger.error(f"No payment found for tenant {tenant_id}.")
 
 @shared_task
 def send_payment_reminders():
     """
     Task to send payment reminders to tenants based on rent contract due dates.
     """
-    from rent.models import RentContract
-    from accounts.models import Tenant
-    from django.conf import settings
-
     today = timezone.now().date()
 
     # Busca contratos ativos na tabela alugae.rent_contract
-    contracts = RentContract.objects.filter(status='active')
+    contracts = Contract.objects.filter(status='active')
 
     for contract in contracts:
         due_date = contract.payment_due_date
@@ -60,16 +83,28 @@ def send_payment_reminders():
         tenant = contract.tenant
         phone_number = tenant.user.phone
 
+        payment = Payment.objects.filter(contract=contract, payment_due_date=this_month_due, status='pending').first()
+
+        if not payment:
+            logger.warning(f"Nenhum payment encontrado para o contrato {contract.id} na data {this_month_due}")
+            continue
+
+        link_upload = generate_upload_link(payment)
+
+        variables_dict = {
+            "1": tenant.user.first_name,
+            "2": str(contract.rent_value),
+            "3": this_month_due.strftime("%d/%m/%Y"),
+            "4": link_upload
+        }
+
         # 3 dias antes do vencimento
         if delta_days == 3:
             logger.info(f"Enviando lembrete de 3 dias antes para {tenant.user.email}")
             send_template_whatsapp_message(
                 to_number=phone_number,
                 content_sid=settings.TWILIO_TEMPLATE_PAYMENT_REMINDER_3DAYS,
-                variables_dict={
-                    "1": this_month_due.strftime("%d/%m/%Y"),
-                    "2": str(contract.rent_value),
-                }
+                variables_dict=variables_dict
             )
 
         # No dia do vencimento
@@ -78,10 +113,7 @@ def send_payment_reminders():
             send_template_whatsapp_message(
                 to_number=phone_number,
                 content_sid=settings.TWILIO_TEMPLATE_PAYMENT_REMINDER_DUEDATE,
-                variables_dict={
-                    "1": this_month_due.strftime("%d/%m/%Y"),
-                    "2": str(contract.rent_value),
-                }
+                variables_dict=variables_dict
             )
 
         # 1 dia após o vencimento
@@ -90,10 +122,7 @@ def send_payment_reminders():
             send_template_whatsapp_message(
                 to_number=phone_number,
                 content_sid=settings.TWILIO_TEMPLATE_PAYMENT_REMINDER_1DAY,
-                variables_dict={
-                    "1": this_month_due.strftime("%d/%m/%Y"),
-                    "2": str(contract.rent_value),
-                }
+                variables_dict=variables_dict
             )
 
 @shared_task
@@ -104,9 +133,6 @@ def send_proof_received_confirmation_task(tenant_id):
     Args:
         tenant_id (int): ID of the tenant who sent the proof.
     """
-    from accounts.models import Tenant
-    from django.conf import settings
-
     try:
         tenant = Tenant.objects.get(id=tenant_id)
         phone_number = tenant.user.phone
@@ -130,27 +156,40 @@ def send_proof_received_confirmation_task(tenant_id):
         logger.error(f"Tenant with ID {tenant_id} does not exist.")
     
 @shared_task
-def send_payment_status_notification_task(tenant_id, status):
+def send_payment_status_notification_task(tenant_id, status, reason=None):
     """
     Sends a WhatsApp message to notify the tenant if the payment was approved or rejected.
 
     Args:
         tenant_id (int): ID of the tenant.
         status (str): Either 'approved' or 'rejected'.
+        reason (str): Reason for rejection (optional).
     """
-    from accounts.models import Tenant
-    from django.conf import settings
-
     try:
         tenant = Tenant.objects.get(id=tenant_id)
         phone_number = tenant.user.phone
 
+        # Busca o último payment proof_received ou pending
+        payment = Payment.objects.filter(tenant=tenant, status__in=['proof_received', 'pending']).latest('payment_due_date')
+
         if status == 'approved':
             content_sid = settings.TWILIO_TEMPLATE_APPROVED
+            variables_dict = {
+                "1": tenant.user.first_name,
+                "2": str(payment.amount_due)
+            }
             logger.info(f"Enviando notificação de pagamento APROVADO para {tenant.user.email}")
+
         elif status == 'rejected':
             content_sid = settings.TWILIO_TEMPLATE_REJECTED
+            link_upload = generate_upload_link(payment)
+            variables_dict = {
+                "1": tenant.user.first_name,
+                "2": reason,
+                "3": link_upload
+            }
             logger.info(f"Enviando notificação de pagamento REJEITADO para {tenant.user.email}")
+
         else:
             logger.warning(f"Status inválido '{status}' informado para tenant {tenant_id}")
             return
@@ -158,9 +197,7 @@ def send_payment_status_notification_task(tenant_id, status):
         sid = send_template_whatsapp_message(
             to_number=phone_number,
             content_sid=content_sid,
-            variables_dict={
-                "1": tenant.user.first_name,  # Personalização com nome
-            }
+            variables_dict=variables_dict
         )
 
         if sid:
@@ -170,3 +207,47 @@ def send_payment_status_notification_task(tenant_id, status):
 
     except Tenant.DoesNotExist:
         logger.error(f"Tenant com ID {tenant_id} não encontrado.")
+
+    except Payment.DoesNotExist:
+        logger.error(f"Payment não encontrado para tenant {tenant_id} para status '{status}'.")
+
+@shared_task
+def generate_payments():
+    """
+    Generates payments (invoices) for each active RentContract.
+    Should run once a month (e.g., every 25th).
+    """
+    from payments.models import Payment
+    from django.utils import timezone
+
+    today = timezone.now().date()
+    current_month = today.month
+    current_year = today.year
+
+    contracts = Contract.objects.filter(status='active')
+
+    for contract in contracts:
+        # Define a data de vencimento para o ciclo atual
+        due_day = contract.payment_due_date
+        due_date = timezone.datetime(year=current_year, month=current_month, day=due_day).date()
+
+        # Evita duplicar payments no mesmo mês para o contrato
+        exists = Payment.objects.filter(contract=contract, payment_due_date=due_date).exists()
+        if exists:
+            continue  # Já existe, não cria outro
+
+        # Cria o novo payment (invoice)
+        token = get_random_string(32)
+        Payment.objects.create(
+            contract=contract,
+            tenant=contract.tenant,
+            landlord=contract.landlord,
+            unit=contract.unit,
+            amount_due=contract.rent_value,
+            payment_due_date=due_date,
+            upload_token=token,
+            status='pending'
+        )
+
+        logger.info(f"Payment created for contract {contract.id} with due date {due_date} and token {token}")
+        print(f"Generated token for payment: {token}")
