@@ -31,6 +31,16 @@
                 </select>
             </div>
 
+            <!-- Selecionar Dia de Vencimento -->
+            <div class="flex flex-col">
+                <label class="text-gray-700 font-medium mb-1">💰 Selecione o Dia de Vencimento</label>
+                <select name="payment_due_date" required class="select select-bordered bg-gray-200 text-gray-800 rounded-lg py-3 w-full">
+                    {% for day in day_range %}
+                        <option value="{{ day }}">{{ day }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
             <!-- Selecionar Modelo de Contrato -->
             <div class="flex flex-col">
                 <label class="text-gray-700 font-medium mb-1">📄 Selecione o Modelo</label>

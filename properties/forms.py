@@ -1,5 +1,6 @@
 from django import forms
 from .models import Property, Unit
+from accounts.models import Tenant  # ⚠️ Importa o Tenant!
 
 # Formulário para propriedades
 class PropertyForm(forms.ModelForm):
@@ -29,3 +30,12 @@ class UnitForm(forms.ModelForm):
             'move_in_date',
             'move_out_date',
         ]
+
+    def __init__(self, *args, **kwargs):
+        landlord = kwargs.pop('landlord', None)
+        super(UnitForm, self).__init__(*args, **kwargs)
+
+        if landlord:
+            self.fields['tenant'].queryset = Tenant.objects.filter(landlord=landlord)
+        else:
+            self.fields['tenant'].queryset = Tenant.objects.none()

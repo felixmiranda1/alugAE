@@ -24,9 +24,19 @@
                 ✅ Todos os dados estão completos!
             </div>
 
-            <!-- 🔥 Botão de gerar contrato aparece no topo caso tudo esteja preenchido -->
+            <!-- Mostra o Dia de Vencimento antes do botão de gerar contrato -->
+            <div class="border rounded-lg p-4 bg-gray-100 mb-4">
+                <h3 class="text-lg font-semibold text-gray-800">
+                    💰 Dia de Vencimento
+                </h3>
+                <div>
+                    <p><strong>Vencimento no dia:</strong> {{ payment_due_date }}</p>
+                </div>
+            </div>
+
             <form method="post" action="{% url 'rent:generate_contract' unit_id=unit.id tenant_id=tenant.id template_id=template.id %}">
                 {% csrf_token %}
+                <input type="hidden" name="payment_due_date" value="{{ payment_due_date }}">
                 <button type="submit" class="btn btn-success w-full mb-4">📜 Gerar Contrato</button>
             </form>
         {% endif %}

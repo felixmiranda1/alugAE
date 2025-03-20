@@ -26,8 +26,7 @@ env = environ.Env()
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-z#c2$8dvb3h8@sty%mwo+!!j650e44k_t)bg-x4m7$b(86zq9n'
-
+SECRET_KEY = env('DJANGO_SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -57,7 +56,8 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
-    'rest_framework', 
+    'rest_framework',
+    'django_celery_beat', 
 ]
 
 MIDDLEWARE = [
@@ -106,23 +106,23 @@ WSGI_APPLICATION = 'alugAE.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'alugae',  # Nome do banco de dados
-#         'USER': 'felixmiranda',  # Usuário do banco de dados
-#         'PASSWORD': 'go',  # Senha do usuário
-#         'HOST': 'localhost',  # Endereço do banco de dados
-#         'PORT': '5432',  # Porta do PostgreSQL
-#         'OPTIONS': {
-#             'options': '-c search_path=alugae'  # Configura o schema padrão
-#         },
-#     }
-# }
-
 DATABASES = {
-    'default': env.db('DATABASE_URL', default='postgresql://postgres:cwPEnbhRBqwEACGwXQPYQGRHzzHANxvh@trolley.proxy.rlwy.net:17985/railway?schema=alugae')
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'alugae',  # Nome do banco de dados
+        'USER': 'felixmiranda',  # Usuário do banco de dados
+        'PASSWORD': 'go',  # Senha do usuário
+        'HOST': 'localhost',  # Endereço do banco de dados
+        'PORT': '5432',  # Porta do PostgreSQL
+        'OPTIONS': {
+            'options': '-c search_path=alugae'  # Configura o schema padrão
+        },
+    }
 }
+
+# DATABASES = {
+#     'default': env.db('DATABASE_URL', default='postgresql://postgres:cwPEnbhRBqwEACGwXQPYQGRHzzHANxvh@trolley.proxy.rlwy.net:17985/railway?schema=alugae')
+# }
 
 MIGRATION_MODULES = {
     'accounts': None,
@@ -195,6 +195,24 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')  # Diretório raiz para arquivos
 # Subdiretório para templates de contratos
 CONTRACTS_TEMPLATES_DIR = os.path.join(MEDIA_ROOT, 'contracts_templates/')
 
+#TWILIO variables
+TWILIO_ACCOUNT_SID = env('TWILIO_ACCOUNT_SID')
+TWILIO_AUTH_TOKEN = env('TWILIO_AUTH_TOKEN')
+TWILIO_WHATSAPP_NUMBER = env('TWILIO_WHATSAPP_NUMBER')
+
+TWILIO_TEMPLATE_PAYMENT_REMINDER_3DAYS = env('TWILIO_TEMPLATE_PAYMENT_REMINDER_3DAYS', default='')
+TWILIO_TEMPLATE_PAYMENT_REMINDER_DUEDATE = env('TWILIO_TEMPLATE_PAYMENT_REMINDER_DUEDATE', default='')
+TWILIO_TEMPLATE_PAYMENT_REMINDER_1DAY = env('TWILIO_TEMPLATE_PAYMENT_REMINDER_1DAY', default='')
+TWILIO_TEMPLATE_PROOF_RECEIVED = env('TWILIO_TEMPLATE_PROOF_RECEIVED', default='')
+TWILIO_TEMPLATE_APPROVED = env('TWILIO_TEMPLATE_APPROVED', default='')
+TWILIO_TEMPLATE_REJECTED = env('TWILIO_TEMPLATE_REJECTED', default='')
+
+ALUGAE_BASE_URL = env('ALUGAE_BASE_URL', default='http://127.0.0.1:8000')
+
+#Celery
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
@@ -207,13 +225,28 @@ USE_I18N = True
 
 USE_TZ = True
 
-STATIC_URL = '/static/'
+# STATIC_URL = '/static/'
 
-# Configuração de arquivos estáticos com o WhiteNoise
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# # Configuração de arquivos estáticos com o WhiteNoise
+# STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# Diretório onde os arquivos estáticos serão coletados em produção
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+# # Diretório onde os arquivos estáticos serão coletados em produção
+# STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+STATIC_URL = 'static/'
+
+# 🛠️ Corrigindo para garantir que Django encontre os arquivos estáticos
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static"),  # Adiciona a pasta static como diretório válido
+]
+
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")  # Onde os arquivos serão coletados
+
+# Default primary key field type
+# https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
 
 
 # Default primary key field type

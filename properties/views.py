@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Property, Unit
+from accounts.models import Tenant
 from .forms import PropertyForm, UnitForm
 from django.contrib.auth.decorators import login_required
 from .utils import landlord_required
@@ -26,7 +27,7 @@ def property_add(request):
             property_instance = form.save(commit=False)
             property_instance.landlord = request.user  # Associate with the logged-in landlord
             property_instance.save()
-            return redirect('property_list')
+            return redirect('properties:property_list')
     else:
         form = PropertyForm()
     return render(request, 'properties/property_form.html', {'form': form})
@@ -85,43 +86,46 @@ def unit_list(request, property_id):
 @login_required
 def unit_add(request, property_id):
     """Adicionar uma nova unidade a uma propriedade específica."""
-    landlord = request.user.landlord  # Obtém o Landlord autenticado
+    landlord = request.user.landlord
 
-    # Buscar a propriedade garantindo que ela pertence ao landlord logado
     property_instance = get_object_or_404(Property, id=property_id, landlord_id=landlord.id)
+    tenants = Tenant.objects.filter(landlord=landlord)
 
     if request.method == 'POST':
-        form = UnitForm(request.POST)
+        form = UnitForm(request.POST, landlord=landlord)
         if form.is_valid():
-            unit = form.save(commit=False)  # Não salva ainda no banco
-            unit.property = property_instance  # Relaciona a unidade com a propriedade
-            unit.save()  # Salva no banco de dados
-            return redirect('properties:unit_list', property_id=property_instance.id)  # 🔥 Garante que property_id seja passado corretamente
+            unit = form.save(commit=False)
+            unit.property = property_instance
+            unit.save()
+            return redirect('properties:unit_list', property_id=property_instance.id)
     else:
-        form = UnitForm()
+        form = UnitForm(landlord=landlord)  # <<< AQUI ESTAVA FALTANDO
 
-    return render(request, 'properties/unit_form.html', {'form': form, 'property': property_instance})
+    return render(request, 'properties/unit_form.html', {'form': form, 'property': property_instance, 'tenants': tenants})
 
 # Edit an existing unit
 @login_required
 def unit_edit(request, unit_id):
     """Editar uma unidade específica."""
-    landlord = request.user.landlord  # Obtém o Landlord autenticado
+    landlord = request.user.landlord
 
-    # Buscar a unidade garantindo que pertence a uma propriedade do landlord logado
     unit = get_object_or_404(Unit, id=unit_id, property__landlord_id=landlord.id)
+    tenants = Tenant.objects.filter(landlord=landlord)
 
     if request.method == 'POST':
-        form = UnitForm(request.POST, instance=unit)
+        form = UnitForm(request.POST, instance=unit, landlord=landlord)
         if form.is_valid():
             form.save()
             return redirect('properties:unit_list', property_id=unit.property.id)
     else:
-        form = UnitForm(instance=unit)
+        form = UnitForm(instance=unit, landlord=landlord)  # ✅ landlord incluído aqui
 
-    # 🔥 Agora passamos `property` no contexto para o template funcionar corretamente!
-    return render(request, 'properties/unit_form.html', {'form': form, 'unit': unit, 'property': unit.property})
-
+    return render(request, 'properties/unit_form.html', {
+        'form': form,
+        'unit': unit,
+        'property': unit.property,
+        'tenants': tenants
+    })
 # Delete a unit
 @login_required
 @landlord_required
