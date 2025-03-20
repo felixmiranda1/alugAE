@@ -27,6 +27,7 @@ environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env('DJANGO_SECRET_KEY')
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -210,7 +211,7 @@ TWILIO_TEMPLATE_REJECTED = env('TWILIO_TEMPLATE_REJECTED', default='')
 ALUGAE_BASE_URL = env('ALUGAE_BASE_URL', default='http://127.0.0.1:8000')
 
 #Celery
-CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_BROKER_URL = env('REDIS_URL')
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 
